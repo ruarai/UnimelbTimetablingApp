@@ -1,0 +1,14 @@
+﻿
+#left {
+    width: 200px;
+    float: left;
+}
+
+#right {
+    margin-left: 200px;
+    /* Change this to whatever the width of your left column is*/
+}
+
+.clear {
+    clear: both;
+}

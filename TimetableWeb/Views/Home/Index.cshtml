@@ -1,0 +1,60 @@
+﻿@using Timetable;
+@model List<Subject>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Unimelb Timetabling App</title>
+    <meta charset="utf-8" />
+
+    <link href="~/css/style.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/css/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/css/fullcalendar.min.css" rel="stylesheet" type="text/css" media="all" />
+
+    <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
+
+    <script src="~/scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/scripts/jquery-ui.min.js"></script>
+
+    <script src="~/scripts/moment.js"></script>
+    <script src="~/scripts/fullcalendar.min.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            var subjectList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+            var names = subjectList.map(function (item) {
+                return item['DisplayName'];
+            });
+
+            $("#subjectSearch").autocomplete({
+                source: names, delay: 50, minLength: 2,
+                select: function (event, ui) {
+                    $("#subjectList").append("<div>" + ui.item.value + "</div>");
+                    $("#subjectSearch").val("");
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+    <script src="~/scripts/client.js"></script>
+</head>
+<body>
+    <div id="left">
+        <label for="subjectSearch">Subject:</label>
+        <input id="subjectSearch" />
+        <div id="subjectList">
+
+        </div>
+        <button class="ui-button ui-widget ui-corner-all" id="calculateButton">Calculate</button>
+    </div>
+    <div id="right">
+            <div id="timetable">
+
+            </div>
+    </div>
+    <div class="clear"></div>
+</body>
+</html>
