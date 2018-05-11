@@ -1,4 +1,27 @@
-﻿
+﻿body {
+    font-family: 'PT Sans', sans-serif;
+}
+
+.borderlow {
+    background: url('/img/dither_lowdense.png') repeat;
+}
+
+.borderhigh {
+    background: url('/img/dither_highdense.png') repeat;
+}
+
+.border {
+    margin: 0 auto;
+    margin-bottom: 20px;
+    padding: 8px;
+}
+
+.content {
+    background: white;
+    padding: 12px;
+}
+
+
 #left {
     width: 300px;
     float: left;
@@ -25,13 +48,23 @@
 }
 
 #leftColumnInner {
-    padding:4px;
+    padding:8px;
 }
 
 .label{
     padding-bottom:6px;
+    text-decoration:underline;
 }
 
 .fc-time-grid-event {
     border-width:2px !important;
+}
+.fc-day-header {
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+.inlineAction {
+    cursor: pointer;
+    color:dodgerblue;
 }

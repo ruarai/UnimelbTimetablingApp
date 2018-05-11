@@ -12,6 +12,7 @@
     <link href="~/css/style.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/css/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/css/fullcalendar.min.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|PT+Sans" rel="stylesheet">
 
     <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
 
@@ -25,45 +26,39 @@
 
     <script type="text/javascript">
         $(function () {
-            var subjectList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
-
-            var names = subjectList.map(function (item) {
-                return item['DisplayName'];
-            });
-
-            $("#subjectSearch").autocomplete({
-                source: names, delay: 50, minLength: 2,
-                select: function (event, ui) {
-                    $("#subjectList").append("<div>" + ui.item.value + "</div>");
-                    $("#subjectSearch").val("");
-                    event.preventDefault();
-                }
-            });
+            //Generate a global variable of each of the full subject list
+            window.subjectList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
         });
     </script>
     <script src="~/scripts/client.js"></script>
 </head>
 <body>
     <div id="left">
-        <div id="leftColumnInner">
-            <div class="label">
-                Search for subjects:
-            </div>
-            <div>
-                <label for="subjectSearch">Subject:</label>
-                <input id="subjectSearch" />
-            </div>
-            <div id="subjectList">
+        <div id="leftColumnInner" class="border borderhigh">
+            <div class="content">
+                <div class="label">
+                    Search for subjects:
+                </div>
+                <div>
+                    <label for="subjectSearch">Subject:</label>
+                    <input id="subjectSearch" />
+                </div>
+                <div id="subjectList">
 
+                </div>
+                <button id="calculateButton">Calculate</button>
+                <div id="progressBar"></div>
+                <div id="slider"></div>
             </div>
-            <button id="calculateButton">Calculate</button>
-            <div id="progressBar"></div>
-            <div id="slider"></div>
         </div>
     </div>
     <div id="right">
-        <div id="timetable">
+        <div class="border borderlow">
+            <div class="content">
+                <div id="timetable">
 
+                </div>
+            </div>
         </div>
     </div>
     <div class="clear"></div>

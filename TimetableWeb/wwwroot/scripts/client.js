@@ -1,6 +1,19 @@
 ﻿$(function () {
     var timetableList = [];
 
+    var names = subjectList.map(function (item) {
+        return item['DisplayName'];
+    });
+
+    $("#subjectSearch").autocomplete({
+        source: names, delay: 50, minLength: 2,
+        select: function (event, ui) {
+            $("#subjectList").append(buildSubjectListing(ui.item.value));
+            $("#subjectSearch").val("");
+            event.preventDefault();
+        }
+    });
+
     $("#timetable").fullCalendar({
         weekends: false,
         defaultView: 'agendaWeek',
@@ -58,6 +71,19 @@
         console.log('connection error');
         console.log(err);
     });
+
+    var buildSubjectListing = function (subjectName) {
+        var div = $('<div>' + subjectName + '</div>');
+
+        var removeButton = $('<a class="inlineAction"> (del)</a>');
+        removeButton.click(function () {
+            this.parentNode.parentNode.removeChild(this.parentNode);
+        });
+
+        div.append(removeButton);
+
+        return div;
+    }
 
     var renderTimetable = function (timetable) {
         $("#timetable").fullCalendar('gotoDate', timetable.classes[0].timeStart);
