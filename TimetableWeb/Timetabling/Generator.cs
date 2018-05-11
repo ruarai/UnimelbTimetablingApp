@@ -20,6 +20,7 @@ namespace Timetable
 
             return genPermutations(classInfos, slots, 0);
         }
+
         private List<List<ScheduledClass>> genPermutations(List<ClassInfo> classInfos, byte[] slots, int depth)
         {
             int i = 1;
@@ -71,6 +72,7 @@ namespace Timetable
                 timetables.OrderBy(t => t.NumberClashes).ThenBy(t => t.NumberDaysClasses)
                     .ThenByDescending(t => t.AverageStartTime);
         }
+
         private Timetable analysePermutation(List<ScheduledClass> permutation)
         {
             Timetable t = new Timetable(permutation);
