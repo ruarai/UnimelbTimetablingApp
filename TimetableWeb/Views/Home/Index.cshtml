@@ -45,13 +45,21 @@
 </head>
 <body>
     <div id="left">
-        <label for="subjectSearch">Subject:</label>
-        <input id="subjectSearch" />
-        <div id="subjectList">
+        <div id="leftColumnInner">
+            <div class="label">
+                Search for subjects:
+            </div>
+            <div>
+                <label for="subjectSearch">Subject:</label>
+                <input id="subjectSearch" />
+            </div>
+            <div id="subjectList">
 
+            </div>
+            <button id="calculateButton">Calculate</button>
+            <div id="progressBar"></div>
+            <div id="slider"></div>
         </div>
-        <button id="calculateButton">Calculate</button>
-        <div id="progressBar"></div>
     </div>
     <div id="right">
         <div id="timetable">

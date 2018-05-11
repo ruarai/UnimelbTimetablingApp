@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
-using System.IO;
 using RestSharp;
 
 namespace Timetable
@@ -19,6 +17,7 @@ namespace Timetable
 
         public string DisplayName => Code + " " + Name;
 
+        [JsonIgnore]
         public List<ClassInfo> Classes { get; set; }
 
 
@@ -169,110 +168,4 @@ namespace Timetable
         }
     }
 
-
-
-
-    public class ClassInfo
-    {
-        public string ClassName { get; set; }
-
-        [JsonIgnore]
-        public List<ScheduledClass> ScheduledClasses { get; set; }
-        [JsonIgnore]
-        public Subject ParentSubject { get; set; }
-
-        public string ClassType { get; set; }
-    }
-
-    public class ScheduledClass
-    {
-        public ScheduledClass(DateTime timeStart, DateTime timeEnd)
-        {
-            TimeStart = timeStart;
-            TimeEnd = timeEnd;
-        }
-
-        [JsonIgnore]
-        public Subject ParentSubject => ClassInfo.ParentSubject;
-        public string ClassName => ClassInfo.ClassName;
-        public ClassInfo ClassInfo { get; set; }
-        public string Location { get; set; }
-        public DateTime TimeStart { get; set; }
-        public DateTime TimeEnd { get; set; }
-
-        public short SlotStart { get { return dateToSlot(TimeStart); } }
-        public short SlotEnd { get { return dateToSlot(TimeEnd); } }
-
-        public TimeSpan Duration => TimeEnd - TimeStart;
-        public short ClassNumber { get; set; }
-
-        public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
-        //Classes that are of the same number, e.g. stream lectures
-        //These classes are dependent entirely upon the scheduling of this class.
-
-
-        private static short dateToSlot(DateTime dt)
-        {
-            int day = (int)dt.DayOfWeek - 1;//Day indicating 0 for monday, 4 for friday.
-
-            int hour = dt.Hour;//Hour between 0 and 23
-
-            int quarter = dt.Minute / 15;//Quarter of hours between 0 and 3
-
-            return (short)(day * 24 * 4 + hour * 4 + quarter);
-        }
-    }
-
-    public class TimetabledClass
-    {
-        public ScheduledClass ScheduledClass { get; set; }
-        public int TotalClashes { get; set; }
-    }
-
-    public class Timetable
-    {
-        public Timetable(List<ScheduledClass> permutation)
-        {
-            int size = permutation.Count + permutation.Sum(c => c.ChildClasses.Count);
-
-            Classes = new ScheduledClass[size];
-
-            int i = 0;
-            foreach (var scheduledClass in permutation)
-            {
-                Classes[i] = scheduledClass;
-                i++;
-                foreach (var childClass in scheduledClass.ChildClasses)
-                {
-                    Classes[i] = childClass;
-                    i++;
-                }
-            }
-        }
-
-
-        public ScheduledClass[] Classes { get; set; }
-        public long AverageStartTime { get; set; }
-        public long AverageEndTime { get; set; }
-        public byte NumberDaysClasses { get; set; }
-        public long NumberClashes {
-            get
-            {
-                var slots = new int[24 * 4 * 5];
-                foreach (var scheduledClass in Classes)
-                {
-                    for (int i = scheduledClass.SlotStart; i < scheduledClass.SlotEnd; i++)
-                        slots[i]++;
-                }
-
-                int clashes = 0;
-
-                for (int i = 0; i < 24 * 4 * 5; i++)
-                    clashes += slots[i] > 0 ? slots[i] - 1 : 0;
-
-                return clashes;
-            }
-        }
-
-    }
 }

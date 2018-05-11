@@ -68,7 +68,7 @@ namespace TimetableWeb.Controllers
 
             var timetables = g.SortPermutations(g.GenPermutations(classInfos)).ToList();
 
-            return Json(timetables.First());
+            return Json(timetables);
         }
         private readonly IHubContext<UIHub> _uiHub;
 

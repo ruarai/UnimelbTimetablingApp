@@ -1,4 +1,5 @@
 ﻿$(function () {
+    var timetableList = [];
 
     $("#timetable").fullCalendar({
         weekends: false,
@@ -6,10 +7,18 @@
         minTime: '07:00:00',
         maxTime: '23:00:00',
         header: false,
-        allDaySlot: false
+        allDaySlot: false,
+        displayEventTime: false
     });
 
-    $("#progressBar").progressbar({value: 0});
+    $("#progressBar").progressbar({ value: 0 });
+    $("#slider").slider({
+        slide: function (event, ui) {
+
+            $('#timetable').fullCalendar('removeEvents');
+            renderTimetable(timetableList[ui.value]);
+        }
+    });
 
 
     $("#calculateButton").click(function (event) {
@@ -24,30 +33,13 @@
 
         $('#timetable').fullCalendar('removeEvents');
 
-        $.getJSON('/Home/GetTimetable?codes=' + subjectCodes.join('|'), function (timetableData) {
-            console.log(timetableData);
+        $.getJSON('/Home/GetTimetable?codes=' + subjectCodes.join('|'), function (timetablesData) {
+            timetableList = timetablesData;
 
-            $("#timetable").fullCalendar('gotoDate', timetableData.classes[0].timeStart);
+            renderTimetable(timetablesData[0]);
 
-            timetableData.classes.forEach(function (scheduledClass) {
-                var classLabel = scheduledClass.className + '\n' + scheduledClass.location;
-
-
-                event = {
-                    start: scheduledClass.timeStart,
-                    end: scheduledClass.timeEnd,
-                    title: classLabel
-                };
-
-                $("#timetable").fullCalendar('renderEvent', event);
-
-                console.log(event);
-            });
-
+            $("#slider").slider("option", "max", timetablesData.length - 1);
         });
-
-
-
     });
 
     let connection = new signalR.HubConnectionBuilder()
@@ -64,7 +56,54 @@
 
     connection.start().catch(err => {
         console.log('connection error');
+        console.log(err);
     });
 
+    var renderTimetable = function (timetable) {
+        $("#timetable").fullCalendar('gotoDate', timetable.classes[0].timeStart);
+
+        timetable.classes.forEach(function (scheduledClass) {
+
+            console.log(scheduledClass);
+
+            var classLabel = scheduledClass.parentSubject.displayName + '\n' +
+                             scheduledClass.className;
+
+            event = {
+                start: scheduledClass.timeStart,
+                end: scheduledClass.timeEnd,
+                title: classLabel,
+                backgroundColor: stringToColour(scheduledClass.parentSubject.code),
+                borderColor: stringToColour(scheduledClass.classDescription),
+                textColor: invertColor(scheduledClass.parentSubject.code)
+            };
+
+            $("#timetable").fullCalendar('renderEvent', event);
+        });
+    }
+    var stringToColour = function (str) {
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var colour = '#';
+        for (var i = 0; i < 3; i++) {
+            var value = (hash >> (i * 8)) & 0xFF;
+            colour += ('00' + value.toString(16)).substr(-2);
+        }
+        return colour;
+    }
+
+    function invertColor(hex) {
+        if (hex.indexOf('#') === 0) {
+            hex = hex.slice(1);
+        }
+
+        var r = parseInt(hex.slice(0, 2), 16),
+            g = parseInt(hex.slice(2, 4), 16),
+            b = parseInt(hex.slice(4, 6), 16);
+       // http://stackoverflow.com/a/3943023/112731
+       return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
+    }
 });
 

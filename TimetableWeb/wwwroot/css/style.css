@@ -15,3 +15,23 @@
 .clear {
     clear: both;
 }
+
+#progressBar {
+    margin: 6px 6px 0 0px;
+}
+
+#slider {
+    margin: 6px 6px 0 0px;
+}
+
+#leftColumnInner {
+    padding:4px;
+}
+
+.label{
+    padding-bottom:6px;
+}
+
+.fc-time-grid-event {
+    border-width:2px !important;
+}
