@@ -21,6 +21,8 @@
     <script src="~/scripts/moment.js"></script>
     <script src="~/scripts/fullcalendar.min.js"></script>
 
+    <script src="~/scripts/signalr.min.js"></script>
+
     <script type="text/javascript">
         $(function () {
             var subjectList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
@@ -48,12 +50,13 @@
         <div id="subjectList">
 
         </div>
-        <button class="ui-button ui-widget ui-corner-all" id="calculateButton">Calculate</button>
+        <button id="calculateButton">Calculate</button>
+        <div id="progressBar"></div>
     </div>
     <div id="right">
-            <div id="timetable">
+        <div id="timetable">
 
-            </div>
+        </div>
     </div>
     <div class="clear"></div>
 </body>

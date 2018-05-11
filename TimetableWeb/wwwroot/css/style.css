@@ -1,12 +1,15 @@
 ﻿
 #left {
-    width: 200px;
+    width: 300px;
     float: left;
 }
 
 #right {
-    margin-left: 200px;
-    /* Change this to whatever the width of your left column is*/
+    margin-left: 300px;
+}
+
+#subjectList{
+    height:200px;
 }
 
 .clear {

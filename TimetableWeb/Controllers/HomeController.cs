@@ -8,8 +8,9 @@ using Newtonsoft.Json;
 using Timetable;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 
-namespace TestElectron.Controllers
+namespace TimetableWeb.Controllers
 {
     public class HomeController : Controller
     {
@@ -29,9 +30,10 @@ namespace TestElectron.Controllers
             }
         }
 
-        public HomeController(IHostingEnvironment environment)
+        public HomeController(IHostingEnvironment environment, IHubContext<UIHub> hubContext)
         {
             _hostingEnvironment = environment;
+            _uiHub = hubContext;
         }
 
         public IActionResult Index()
@@ -60,9 +62,19 @@ namespace TestElectron.Controllers
 
             List<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes).ToList();
 
-            var timetables = Generator.SortPermutations(Generator.GenPermutations(classInfos)).ToList();
+            Generator g = new Generator();
+
+            g.ProgressUpdate += generatorProgressUpdate;
+
+            var timetables = g.SortPermutations(g.GenPermutations(classInfos)).ToList();
 
             return Json(timetables.First());
+        }
+        private readonly IHubContext<UIHub> _uiHub;
+
+        private void generatorProgressUpdate(float progress)
+        {
+            _uiHub.Clients.All.SendAsync("progress", progress);
         }
 
         public async Task<IActionResult> GetSubjectInfo(string subjectCode)

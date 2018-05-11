@@ -6,18 +6,23 @@ using System.Threading.Tasks;
 
 namespace Timetable
 {
-    public static class Generator
+    internal delegate void ProgressEvent(float progress);
+
+    class Generator
     {
-        public static int MaxClash = 0;
-        public static List<List<ScheduledClass>> GenPermutations(List<ClassInfo> classInfos)
+        public event ProgressEvent ProgressUpdate;
+
+        public int MaxClash = 0;
+        public List<List<ScheduledClass>> GenPermutations(List<ClassInfo> classInfos)
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
 
 
             return genPermutations(classInfos, slots, 0);
         }
-        private static List<List<ScheduledClass>> genPermutations(List<ClassInfo> classInfos, byte[] slots, int depth)
+        private List<List<ScheduledClass>> genPermutations(List<ClassInfo> classInfos, byte[] slots, int depth)
         {
+            int i = 1;
             var permutations = new List<List<ScheduledClass>>();
             foreach (var scheduledClass in classInfos[depth].ScheduledClasses)
             {
@@ -38,12 +43,17 @@ namespace Timetable
                 {
                     permutations.Add(new List<ScheduledClass> { scheduledClass });
                 }
+
+                if(depth == 0)
+                    ProgressUpdate?.Invoke((float)i / classInfos[depth].ScheduledClasses.Count);
+
+                i++;
             }
 
             return permutations;
         }
 
-        public static IEnumerable<Timetable> SortPermutations(List<List<ScheduledClass>> permutations)
+        public IEnumerable<Timetable> SortPermutations(List<List<ScheduledClass>> permutations)
         {
             var timetables = permutations.Select(analysePermutation);
             
@@ -53,7 +63,7 @@ namespace Timetable
                     .ThenByDescending(t => t.AverageStartTime);
         }
 
-        public static IEnumerable<Timetable> SortClashedPermutations(List<List<ScheduledClass>> permutations)
+        public IEnumerable<Timetable> SortClashedPermutations(List<List<ScheduledClass>> permutations)
         {
             var timetables = permutations.Select(analysePermutation);
 
@@ -61,7 +71,7 @@ namespace Timetable
                 timetables.OrderBy(t => t.NumberClashes).ThenBy(t => t.NumberDaysClasses)
                     .ThenByDescending(t => t.AverageStartTime);
         }
-        private static Timetable analysePermutation(List<ScheduledClass> permutation)
+        private Timetable analysePermutation(List<ScheduledClass> permutation)
         {
             Timetable t = new Timetable(permutation);
 
@@ -90,7 +100,7 @@ namespace Timetable
 
 
 
-        private static byte[] updateSlots(ScheduledClass scheduledClass, byte[] slots)
+        private byte[] updateSlots(ScheduledClass scheduledClass, byte[] slots)
         {
             var newSlots = new byte[24 * 4 * 5];
             Array.Copy(slots, newSlots, slots.Length);
@@ -107,7 +117,7 @@ namespace Timetable
             return newSlots;
         }
 
-        private static int numClashes(ScheduledClass scheduledClass, byte[] slots)
+        private int numClashes(ScheduledClass scheduledClass, byte[] slots)
         {
             var classes = new List<ScheduledClass> { scheduledClass }.Concat(scheduledClass.ChildClasses);
 

@@ -6,29 +6,13 @@
         minTime: '07:00:00',
         maxTime: '23:00:00',
         header: false,
-        allDaySlot:false
+        allDaySlot: false
     });
+
+    $("#progressBar").progressbar({value: 0});
 
 
     $("#calculateButton").click(function (event) {
-        $("#subjectInfo").empty();
-
-        /*$("#subjectList").children().each(function () {
-
-            console.log($(this));
-
-            var subjectFullName = $(this).text().trim();
-
-            var subjectCode = subjectFullName.split(' ')[0];
-
-
-            $.getJSON('@Url.Action("GetSubjectInfo")?subjectCode=' + subjectCode, function (classInfos) {
-                classInfos.forEach(function (classInfo) {
-                    $("#subjectInfo").append("<div>" + classInfo.className + ": " + classInfo.classType + "</div>");
-                });
-            });
-        });*/
-
         var subjectCodes = [];
 
         $("#subjectList").children().each(function () {
@@ -37,13 +21,14 @@
             var subjectCode = subjectFullName.split(' ')[0];
             subjectCodes.push(subjectCode);
         });
-        
+
+        $('#timetable').fullCalendar('removeEvents');
+
         $.getJSON('/Home/GetTimetable?codes=' + subjectCodes.join('|'), function (timetableData) {
             console.log(timetableData);
-            
 
             $("#timetable").fullCalendar('gotoDate', timetableData.classes[0].timeStart);
-            
+
             timetableData.classes.forEach(function (scheduledClass) {
                 var classLabel = scheduledClass.className + '\n' + scheduledClass.location;
 
@@ -58,10 +43,28 @@
 
                 console.log(event);
             });
-            
+
         });
 
 
 
     });
+
+    let connection = new signalR.HubConnectionBuilder()
+        .withUrl("/ui")
+        .build();
+
+    connection.onClosed = e => {
+        console.log('connection to ui lost');
+    };
+
+    connection.on('progress', (message) => {
+        $("#progressBar").progressbar('option','value',message*100);
+    });
+
+    connection.start().catch(err => {
+        console.log('connection error');
+    });
+
 });
+
