@@ -41,7 +41,7 @@ namespace TimetableWeb.Controllers
             return View(subjectList);
         }
 
-        public async Task<IActionResult> GetTimetable(string codes)
+        public async Task<IActionResult> GetTimetable(string codes, bool laterStarts, bool lessDays)
         {
             //very gross but idk lol
             string[] subjectCodes = codes.Split('|');
@@ -66,7 +66,7 @@ namespace TimetableWeb.Controllers
 
             g.ProgressUpdate += generatorProgressUpdate;
 
-            var timetables = g.SortPermutations(g.GenPermutations(classInfos)).ToList();
+            var timetables = g.SortPermutations(g.GenPermutations(classInfos), laterStarts, lessDays).ToList();
 
             return Json(timetables);
         }
@@ -93,7 +93,7 @@ namespace TimetableWeb.Controllers
         {
             List<Subject> subjectList = new List<Subject>();
 
-            string subjectsText = System.IO.File.ReadAllText(Path.Combine(_hostingEnvironment.WebRootPath, "codes.json"));
+            string subjectsText = System.IO.File.ReadAllText(Path.Combine(_hostingEnvironment.WebRootPath, "codes_2018_sem2.json"));
 
             var rawSubjects = JsonConvert.DeserializeObject<List<string>>(subjectsText);
 

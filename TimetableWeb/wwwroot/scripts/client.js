@@ -17,7 +17,7 @@
     $("#timetable").fullCalendar({
         weekends: false,
         defaultView: 'agendaWeek',
-        minTime: '07:00:00',
+        minTime: '08:00:00',
         maxTime: '23:00:00',
         header: false,
         allDaySlot: false,
@@ -32,9 +32,11 @@
             renderTimetable(timetableList[ui.value]);
         }
     });
-
+    
 
     $("#calculateButton").click(function (event) {
+        $("#calculateButton").attr('disabled', true);
+
         var subjectCodes = [];
 
         $("#subjectList").children().each(function () {
@@ -45,11 +47,23 @@
         });
 
         $('#timetable').fullCalendar('removeEvents');
+        $("#timetablesInfo").empty();
 
-        $.getJSON('/Home/GetTimetable?codes=' + subjectCodes.join('|'), function (timetablesData) {
+        var laterStarts = $('#laterStartsCheckbox').is(':checked');
+        var lessDays = $('#lessDaysCheckbox').is(':checked');
+
+        var url = '/Home/GetTimetable?codes=' + subjectCodes.join('|') + '&laterStarts=' + laterStarts + '&lessDays=' + lessDays;
+
+        $.getJSON(url, function (timetablesData) {
+            $("#calculateButton").attr('disabled', false);
             timetableList = timetablesData;
 
             renderTimetable(timetablesData[0]);
+
+            if (timetablesData.length === 1)
+                $("#timetablesInfo").append('1 timetable generated');
+            else
+                $("#timetablesInfo").append(timetablesData.length + ' timetables generated');
 
             $("#slider").slider("option", "max", timetablesData.length - 1);
         });
@@ -89,8 +103,6 @@
         $("#timetable").fullCalendar('gotoDate', timetable.classes[0].timeStart);
 
         timetable.classes.forEach(function (scheduledClass) {
-
-            console.log(scheduledClass);
 
             var classLabel = scheduledClass.parentSubject.displayName + '\n' +
                              scheduledClass.className;

@@ -54,14 +54,30 @@ namespace Timetable
             return permutations;
         }
 
-        public IEnumerable<Timetable> SortPermutations(List<List<ScheduledClass>> permutations)
+        public IEnumerable<Timetable> SortPermutations(List<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
         {
             var timetables = permutations.Select(analysePermutation);
-            
 
-            return
-                timetables.OrderBy(t => t.NumberDaysClasses)
-                    .ThenByDescending(t => t.AverageStartTime);
+            if (laterStarts)
+            {
+                if(lessDays)
+                    return timetables.OrderBy(t => t.NumberDaysClasses)
+                        .ThenByDescending(t => t.AverageStartTime);
+                else
+                    return timetables.OrderByDescending(t => t.NumberDaysClasses)
+                        .ThenByDescending(t => t.AverageStartTime);
+            }
+            else
+            {
+                if(lessDays)
+                    return timetables.OrderBy(t => t.NumberDaysClasses)
+                        .ThenBy(t => t.AverageStartTime);
+                else
+                    return timetables.OrderByDescending(t => t.NumberDaysClasses)
+                        .ThenBy(t => t.AverageStartTime);
+
+            }
+
         }
 
         public IEnumerable<Timetable> SortClashedPermutations(List<List<ScheduledClass>> permutations)

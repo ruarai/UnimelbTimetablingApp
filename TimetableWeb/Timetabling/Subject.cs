@@ -30,8 +30,7 @@ namespace Timetable
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(resultStr);
-
-            //Portable .NET doesn't let me use XPATH sadly. luckily there is only one table
+            
             var timesTable = doc.DocumentNode.Descendants("table").FirstOrDefault();
 
             if (timesTable == null)
@@ -160,7 +159,7 @@ namespace Timetable
         {
             RestClient c = new RestClient("https://sws.unimelb.edu.au");
 
-            string query = "?objects=" + subjectCode + "&weeks=1-26&days=1-7&periods=1-56&template=module_by_group_list";
+            string query = "?objects=" + subjectCode + "&weeks=26-52&days=1-7&periods=1-56&template=module_by_group_list";
 
             var request = new RestRequest("/2018/Reports/List.aspx" + query);
 

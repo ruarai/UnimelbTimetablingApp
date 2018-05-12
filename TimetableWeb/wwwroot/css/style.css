@@ -12,13 +12,16 @@
 
 .border {
     margin: 0 auto;
-    margin-bottom: 20px;
     padding: 8px;
 }
 
 .content {
     background: white;
     padding: 12px;
+}
+
+.contenttop {
+    margin-bottom: 12px;
 }
 
 
@@ -47,8 +50,8 @@
     margin: 6px 6px 0 0px;
 }
 
-#leftColumnInner {
-    padding:8px;
+#timetablesInfo{
+    padding-top:4px;
 }
 
 .label{
@@ -56,15 +59,24 @@
     text-decoration:underline;
 }
 
+.inlineAction {
+    cursor: pointer;
+    color: dodgerblue;
+}
+
+.sortCheckbox{
+    float:right;
+}
+
+.sortOption{
+    padding-bottom:4px;
+}
+
+
 .fc-time-grid-event {
     border-width:2px !important;
 }
 .fc-day-header {
     font-weight: normal;
     text-decoration: underline;
-}
-
-.inlineAction {
-    cursor: pointer;
-    color:dodgerblue;
 }

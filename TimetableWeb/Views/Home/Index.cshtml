@@ -34,8 +34,8 @@
 </head>
 <body>
     <div id="left">
-        <div id="leftColumnInner" class="border borderhigh">
-            <div class="content">
+        <div class="border borderhigh">
+            <div class="content contenttop">
                 <div class="label">
                     Search for subjects:
                 </div>
@@ -46,9 +46,25 @@
                 <div id="subjectList">
 
                 </div>
+            </div>
+            <div class="content contenttop">
+                <div class="label">
+                    Sorting options:
+                </div>
+                <div class="sortOption">
+                    <label for="laterStartsCheckbox">Later starts:</label>
+                    <input class="sortCheckbox" id="laterStartsCheckbox" type="checkbox" checked="checked" />
+                </div>
+                <div class="sortOption">
+                    <label for="lessDaysCheckbox">Less days:</label>
+                    <input class="sortCheckbox" id="lessDaysCheckbox" type="checkbox" checked="checked" />
+                </div>
+            </div>
+            <div class="content">
                 <button id="calculateButton">Calculate</button>
                 <div id="progressBar"></div>
                 <div id="slider"></div>
+                <div id="timetablesInfo"></div>
             </div>
         </div>
     </div>
