@@ -30,13 +30,25 @@ namespace Timetable
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(resultStr);
+
+            var tables = doc.DocumentNode.Descendants("table");
+
+            IEnumerable<HtmlNode> rows = new List<HtmlNode>();
             
-            var timesTable = doc.DocumentNode.Descendants("table").FirstOrDefault();
+            //We look for the first non-empty table
+            //This is okay as everything is filtered elsewhere (so we can ignore summer/winter/whatever)
+            int i = 0;
+            while(rows.Count() == 0)
+            {
+                HtmlNode timesTable = tables.Skip(i).FirstOrDefault();
+                
+                if (timesTable == null)
+                    return;
 
-            if (timesTable == null)
-                return;
+                rows = timesTable.Descendants("tbody").First().Descendants("tr");
 
-            var rows = timesTable.Descendants("tbody").First().Descendants("tr");
+                i++;
+            }
 
             foreach (var row in rows)
             {
@@ -159,7 +171,7 @@ namespace Timetable
         {
             RestClient c = new RestClient("https://sws.unimelb.edu.au");
 
-            string query = "?objects=" + subjectCode + "&weeks=26-52&days=1-7&periods=1-56&template=module_by_group_list";
+            string query = "?objects=" + subjectCode + "&weeks=30-42&days=1-7&periods=1-56&template=module_by_group_list";
 
             var request = new RestRequest("/2018/Reports/List.aspx" + query);
 
