@@ -1,17 +1,46 @@
 ﻿$(function () {
     var timetableList = [];
-
+    
     var names = subjectList.map(function (item) {
         return item['DisplayName'];
     });
 
     $("#subjectSearch").autocomplete({
-        source: names, delay: 50, minLength: 2,
+        source: function (request, response) {
+            var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+            var select_el = this.element.get(0); // get dom element
+            var rep = new Array(); // response array
+            // simple loop for the options
+            for (var i = 0; i < select_el.length; i++) {
+                var text = select_el.options[i].text;
+                if (select_el.options[i].value && (!request.term || matcher.test(text)))
+                    // add element to result array
+                    rep.push({
+                        label: text, // no more bold
+                        value: text,
+                        option: select_el.options[i]
+                    });
+            }
+            // send response
+            response(rep);
+        },
+        delay: 50,
+        minLength: 2,
         select: function (event, ui) {
             $("#subjectList").append(buildSubjectListing(ui.item.value));
             $("#subjectSearch").val("");
             event.preventDefault();
         }
+    });
+
+    new Awesomplete('#subjectSearch', {
+        list: names
+    });
+
+    $("#subjectSearch").on('awesomplete-selectcomplete', function () {
+        $("#subjectList").append(buildSubjectListing(this.value));
+        $("#subjectSearch").val("");
+        event.preventDefault();
     });
 
     $("#timetable").fullCalendar({
@@ -95,6 +124,7 @@
         });
 
         div.append(removeButton);
+        div.append('<hr/>');
 
         return div;
     }

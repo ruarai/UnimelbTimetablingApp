@@ -72,6 +72,15 @@
     padding-bottom:4px;
 }
 
+hr {
+    width: 100%;
+    height: 6px;
+    border: none;
+    background: url('/img/dither_mediumdense.png') repeat;
+    margin: 4px;
+}
+
+
 
 .fc-time-grid-event {
     border-width:2px !important;
