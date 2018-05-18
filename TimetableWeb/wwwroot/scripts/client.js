@@ -127,7 +127,7 @@
         div.append('<hr/>');
 
         return div;
-    }
+    };
 
     var renderTimetable = function (timetable) {
         $("#timetable").fullCalendar('gotoDate', timetable.classes[0].timeStart);
@@ -135,7 +135,7 @@
         timetable.classes.forEach(function (scheduledClass) {
 
             var classLabel = scheduledClass.parentSubject.displayName + '\n' +
-                             scheduledClass.className;
+                scheduledClass.className;
 
             event = {
                 start: scheduledClass.timeStart,
@@ -148,19 +148,19 @@
 
             $("#timetable").fullCalendar('renderEvent', event);
         });
-    }
+    };
     var stringToColour = function (str) {
         var hash = 0;
-        for (var i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        for (var j = 0; i < str.length; j++) {
+            hash = str.charCodeAt(j) + ((hash << 5) - hash);
         }
         var colour = '#';
         for (var i = 0; i < 3; i++) {
-            var value = (hash >> (i * 8)) & 0xFF;
+            var value = hash >> i * 8 & 0xFF;
             colour += ('00' + value.toString(16)).substr(-2);
         }
         return colour;
-    }
+    };
 
     function invertColor(hex) {
         if (hex.indexOf('#') === 0) {
@@ -171,7 +171,7 @@
             g = parseInt(hex.slice(2, 4), 16),
             b = parseInt(hex.slice(4, 6), 16);
        // http://stackoverflow.com/a/3943023/112731
-       return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
+       return r * 0.299 + g * 0.587 + b * 0.114 > 186 ? '#000000' : '#FFFFFF';
     }
 });
 
