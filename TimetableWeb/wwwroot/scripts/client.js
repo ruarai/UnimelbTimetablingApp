@@ -151,12 +151,12 @@
     };
     var stringToColour = function (str) {
         var hash = 0;
-        for (var j = 0; i < str.length; j++) {
-            hash = str.charCodeAt(j) + ((hash << 5) - hash);
+        for (var i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
         var colour = '#';
         for (var i = 0; i < 3; i++) {
-            var value = hash >> i * 8 & 0xFF;
+            var value = (hash >> (i * 8)) & 0xFF;
             colour += ('00' + value.toString(16)).substr(-2);
         }
         return colour;

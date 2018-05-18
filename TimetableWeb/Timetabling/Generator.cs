@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Timetable
+namespace Timetabling
 {
     internal delegate void ProgressEvent(float progress);
 
@@ -12,8 +12,7 @@ namespace Timetable
     {
         public event ProgressEvent ProgressUpdate;
 
-        public int MaxClash = 0;
-        public List<List<ScheduledClass>> GenPermutations(List<ClassInfo> classInfos)
+        public List<List<ScheduledClass>> GenPermutations(List<ClassInfo> classInfos, int maxClashes = 0)
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
             
@@ -23,10 +22,12 @@ namespace Timetable
 
             numPredicted = prod;
             numGenerated = 0;
+            generationMaxClashes = maxClashes;
 
             return genPermutations(classInfos, slots, 0);
         }
 
+        private int generationMaxClashes = 0;
         private int numPredicted = 0;
         private int numGenerated = 0;
 
@@ -37,7 +38,7 @@ namespace Timetable
             var permutations = new List<List<ScheduledClass>>();
             foreach (var scheduledClass in classInfos[depth].ScheduledClasses)
             {
-                if (numClashes(scheduledClass, slots) > MaxClash)
+                if (numClashes(scheduledClass, slots) > generationMaxClashes)
                     continue;
 
                 if (depth != classInfos.Count - 1)
@@ -84,16 +85,35 @@ namespace Timetable
                         .ThenBy(t => t.AverageStartTime);
 
             }
-
         }
 
-        public IEnumerable<Timetable> SortClashedPermutations(List<List<ScheduledClass>> permutations)
+        public IEnumerable<Timetable> SortClashedPermutations(List<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
         {
             var timetables = permutations.Select(analysePermutation);
 
-            return
-                timetables.OrderBy(t => t.NumberClashes).ThenBy(t => t.NumberDaysClasses)
-                    .ThenByDescending(t => t.AverageStartTime);
+            if (laterStarts)
+            {
+                if (lessDays)
+                    return timetables.OrderBy(t => t.NumberClashes)
+                        .ThenBy(t => t.NumberDaysClasses)
+                        .ThenByDescending(t => t.AverageStartTime);
+                else
+                    return timetables.OrderBy(t=>t.NumberClashes)
+                        .ThenByDescending(t => t.NumberDaysClasses)
+                        .ThenByDescending(t => t.AverageStartTime);
+            }
+            else
+            {
+                if (lessDays)
+                    return timetables.OrderBy(t => t.NumberClashes)
+                        .ThenBy(t => t.NumberDaysClasses)
+                        .ThenBy(t => t.AverageStartTime);
+                else
+                    return timetables.OrderBy(t=>t.NumberClashes)
+                        .ThenByDescending(t => t.NumberDaysClasses)
+                        .ThenBy(t => t.AverageStartTime);
+
+            }
         }
 
         private Timetable analysePermutation(List<ScheduledClass> permutation)

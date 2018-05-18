@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Timetable
+namespace Timetabling
 {
     public class ScheduledClass
     {

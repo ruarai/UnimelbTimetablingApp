@@ -7,7 +7,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using RestSharp;
 
-namespace Timetable
+namespace Timetabling
 {
     public class Subject
     {

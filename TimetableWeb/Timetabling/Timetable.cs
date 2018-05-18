@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Timetable
+namespace Timetabling
 {
     public class Timetable
     {

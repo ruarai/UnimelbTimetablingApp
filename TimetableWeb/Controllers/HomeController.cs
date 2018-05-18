@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Timetable;
+using Timetabling;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
@@ -66,7 +66,20 @@ namespace TimetableWeb.Controllers
 
             g.ProgressUpdate += generatorProgressUpdate;
 
-            var timetables = g.SortPermutations(g.GenPermutations(classInfos), laterStarts, lessDays).ToList();
+            List<Timetable> timetables = new List<Timetable>();
+
+            int maxClashes = 0;
+
+            while(!timetables.Any())
+            {
+                if (maxClashes == 0)
+                    timetables = g.SortPermutations(g.GenPermutations(classInfos, maxClashes), laterStarts, lessDays).ToList();
+                else
+                    timetables = g.SortClashedPermutations(g.GenPermutations(classInfos, maxClashes), laterStarts, lessDays).ToList();
+
+                maxClashes++;
+            }
+
 
             return Json(timetables);
         }
