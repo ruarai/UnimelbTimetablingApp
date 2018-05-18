@@ -93,8 +93,8 @@ namespace Timetable
                         Classes.Add(classInfo);
                     }
                 }
-                catch (FormatException e)//Sadly can't trust timetable to be in correct format
-                {}
+                catch (FormatException)//Sadly can't trust timetable to be in correct format
+                {   }
             }
 
             //Consolidating lecture streams:
