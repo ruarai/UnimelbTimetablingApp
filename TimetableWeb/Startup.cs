@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define ELECTRON
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.SignalR;
+#if ELECTRON
+using ElectronNET.API;
+using ElectronNET.API.Entities;
+#endif
 
 namespace TimetableWeb
 {
@@ -39,6 +44,26 @@ namespace TimetableWeb
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
             app.UseStaticFiles();
+
+#if ELECTRON
+            Bootstrap();
+#endif
         }
+
+
+#if ELECTRON
+        public async void Bootstrap()
+        {
+            var options = new BrowserWindowOptions
+            {
+                WebPreferences = new WebPreferences
+                {
+                    WebSecurity = false
+                }
+            };
+
+            await Electron.WindowManager.CreateWindowAsync(options);
+        }
+#endif
     }
 }
