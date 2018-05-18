@@ -97,9 +97,10 @@ namespace Timetabling
                 {   }
             }
 
-            //Consolidating lecture streams:
+            //Consolidating lecture/tute/seminar streams: (dangerous?)
             consolidateStreams("L");
             consolidateStreams("T");
+            consolidateStreams("S");
 
             //Removing equivalent classes:
 
