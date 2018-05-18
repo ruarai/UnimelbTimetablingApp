@@ -40,7 +40,6 @@
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
         $("#subjectList").append(buildSubjectListing(this.value));
         $("#subjectSearch").val("");
-        event.preventDefault();
     });
 
     $("#timetable").fullCalendar({
@@ -88,6 +87,7 @@
             timetableList = timetablesData;
 
             renderTimetable(timetablesData[0]);
+            $("#progressBar").progressbar('option','value',100);
 
             if (timetablesData.length === 1)
                 $("#timetablesInfo").append('1 timetable generated');

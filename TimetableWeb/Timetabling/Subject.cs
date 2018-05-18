@@ -20,11 +20,9 @@ namespace Timetable
         [JsonIgnore]
         public List<ClassInfo> Classes { get; set; }
 
-
         public async Task UpdateTimetable()
         {
             Classes = new List<ClassInfo>();
-
 
             string resultStr = await getTimetableHTML(Code);
 
@@ -38,7 +36,7 @@ namespace Timetable
             //We look for the first non-empty table
             //This is okay as everything is filtered elsewhere (so we can ignore summer/winter/whatever)
             int i = 0;
-            while(rows.Count() == 0)
+            while(!rows.Any())
             {
                 HtmlNode timesTable = tables.Skip(i).FirstOrDefault();
                 
@@ -96,26 +94,8 @@ namespace Timetable
             }
 
             //Consolidating lecture streams:
-
-            var lectures = Classes.Where(c => c.ClassType.StartsWith("L")).OrderBy(c => c.ClassType);
-
-            if (!lectures.Any())
-                return;
-
-            foreach (var scheduledLecture in lectures.First().ScheduledClasses)
-            {
-                foreach (var lecture in lectures.Skip(1))
-                {
-                    var pairedLecture =
-                        lecture.ScheduledClasses.FirstOrDefault(c => c.ClassNumber == scheduledLecture.ClassNumber);
-                    scheduledLecture.ChildClasses.Add(pairedLecture);
-                }
-            }
-
-            foreach (var lecture in lectures.Skip(1))
-            {
-                Classes.Remove(lecture);//Remove any lectures that are not the initial from class list
-            }
+            consolidateStreams("L");
+            consolidateStreams("T");
 
             //Removing equivalent classes:
 
@@ -155,6 +135,27 @@ namespace Timetable
             }
         }
 
+        private void consolidateStreams(string classCode)
+        {
+            var streamedClasses = Classes.Where(c => c.ClassType.StartsWith(classCode)).OrderBy(c => c.ClassType);
+
+            if (!streamedClasses.Any())
+                return;
+
+            foreach (var scheduledClass in streamedClasses.First().ScheduledClasses)
+            {
+                foreach (var otherClass in streamedClasses.Skip(1))
+                {
+                    var pairedLecture =
+                        otherClass.ScheduledClasses.FirstOrDefault(c => c.ClassNumber == scheduledClass.ClassNumber);
+                    scheduledClass.ChildClasses.Add(pairedLecture);
+                }
+            }
+
+            foreach (var c in streamedClasses.Skip(1))
+                Classes.Remove(c);   
+        }
+
         private int getWeekOfYear(DateTime dt)
         {
             GregorianCalendar calendar = new GregorianCalendar();
@@ -163,15 +164,16 @@ namespace Timetable
 
         private bool classEquivalent(ScheduledClass a, ScheduledClass b)
         {
-            return a.SlotStart == b.SlotStart &&
-                   a.SlotEnd == b.SlotEnd;
+            return a.SlotStart == b.SlotStart && a.SlotEnd == b.SlotEnd;
         }
+
+        private const string SemesterWeeks = "30-42";
 
         private async Task<string> getTimetableHTML(string subjectCode)
         {
             RestClient c = new RestClient("https://sws.unimelb.edu.au");
 
-            string query = "?objects=" + subjectCode + "&weeks=30-42&days=1-7&periods=1-56&template=module_by_group_list";
+            string query = "?objects=" + subjectCode + "&weeks=" + SemesterWeeks + "&days=1-7&periods=1-56&template=module_by_group_list";
 
             var request = new RestRequest("/2018/Reports/List.aspx" + query);
 

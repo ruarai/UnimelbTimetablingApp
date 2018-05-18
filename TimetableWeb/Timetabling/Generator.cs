@@ -16,14 +16,21 @@ namespace Timetable
         public List<List<ScheduledClass>> GenPermutations(List<ClassInfo> classInfos)
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
+            
+            int prod = 1;
+            foreach (var classInfo in classInfos)
+                prod *= classInfo.ScheduledClasses.Count;
 
+            numPredicted = prod;
 
             return genPermutations(classInfos, slots, 0);
         }
 
+        private int numPredicted = 0;
+
         private List<List<ScheduledClass>> genPermutations(List<ClassInfo> classInfos, byte[] slots, int depth)
         {
-            int i = 1;
+            int i = 0;
             var permutations = new List<List<ScheduledClass>>();
             foreach (var scheduledClass in classInfos[depth].ScheduledClasses)
             {
@@ -33,6 +40,8 @@ namespace Timetable
                 if (depth != classInfos.Count - 1)
                 {
                     var depthPerms = genPermutations(classInfos, updateSlots(scheduledClass, slots), depth + 1);
+                    
+                    ProgressUpdate?.Invoke((float)permutations.Count / numPredicted);
 
                     foreach (var depthPerm in depthPerms)
                     {
@@ -44,11 +53,6 @@ namespace Timetable
                 {
                     permutations.Add(new List<ScheduledClass> { scheduledClass });
                 }
-
-                if(depth == 0)
-                    ProgressUpdate?.Invoke((float)i / classInfos[depth].ScheduledClasses.Count);
-
-                i++;
             }
 
             return permutations;
