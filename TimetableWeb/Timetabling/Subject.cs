@@ -69,6 +69,10 @@ namespace Timetable
                         ClassNumber = short.Parse(info[5])
                     };
 
+                    //Don't include Breakout classses, they're useless
+                    if (info[4].Contains("Breakout"))
+                        continue;
+
                     var classInfo = Classes.FirstOrDefault(c => c.ClassType == info[4]);
 
                     if (classInfo != null)
