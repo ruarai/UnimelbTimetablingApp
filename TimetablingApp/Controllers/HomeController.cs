@@ -9,6 +9,7 @@ using Timetabling;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
+using ElectronNET.API;
 
 namespace TimetablingApp.Controllers
 {
@@ -46,7 +47,7 @@ namespace TimetablingApp.Controllers
             //very gross but idk lol
             string[] subjectCodes = codes.Split('|');
 
-
+           
             List<Subject> subjects = new List<Subject>();
             foreach(var subjectCode in subjectCodes)
             {
@@ -80,8 +81,9 @@ namespace TimetablingApp.Controllers
                 maxClashes++;
             }
 
-
-            return Json(timetables);
+            //Don't send more than 25000 timetables,
+            //sending more will crash the ui
+            return Json(timetables.Take(25000));
         }
         private readonly IHubContext<UIHub> _uiHub;
 
