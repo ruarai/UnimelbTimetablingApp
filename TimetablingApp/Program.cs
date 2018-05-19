@@ -1,5 +1,4 @@
-﻿#define ELECTRON
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,9 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-#if ELECTRON
 using ElectronNET.API;
-#endif
 
 namespace TimetablingApp
 {
@@ -23,16 +20,10 @@ namespace TimetablingApp
 
         public static IWebHost BuildWebHost(string[] args)
         {
-#if ELECTRON
             return WebHost.CreateDefaultBuilder(args)
                 .UseElectron(args)
                 .UseStartup<Startup>()
                 .Build();
-#else
-            return WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
-#endif
 
         }
     }
