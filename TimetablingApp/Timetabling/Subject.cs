@@ -93,7 +93,7 @@ namespace Timetabling
                         Classes.Add(classInfo);
                     }
                 }
-                catch (FormatException)//Sadly can't trust timetable to be in correct format
+                catch (Exception)//Sadly can't trust timetable to be in correct format
                 {   }
             }
 
