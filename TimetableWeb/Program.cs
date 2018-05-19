@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using ElectronNET.API;
 #endif
 
-namespace TimetableWeb
+namespace TimetablingApp
 {
     public class Program
     {

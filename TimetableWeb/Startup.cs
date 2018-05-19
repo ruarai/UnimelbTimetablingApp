@@ -13,7 +13,7 @@ using ElectronNET.API;
 using ElectronNET.API.Entities;
 #endif
 
-namespace TimetableWeb
+namespace TimetablingApp
 {
     public class Startup
     {

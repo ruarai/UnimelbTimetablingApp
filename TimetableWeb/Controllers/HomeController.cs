@@ -10,7 +10,7 @@ using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 
-namespace TimetableWeb.Controllers
+namespace TimetablingApp.Controllers
 {
     public class HomeController : Controller
     {
