@@ -62,7 +62,7 @@ namespace Timetabling
             return permutations;
         }
 
-        public IEnumerable<Timetable> SortPermutations(List<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
+        public IEnumerable<Timetable> SortPermutations(IEnumerable<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
         {
             var timetables = permutations.Select(analysePermutation);
 
@@ -87,7 +87,7 @@ namespace Timetabling
             }
         }
 
-        public IEnumerable<Timetable> SortClashedPermutations(List<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
+        public IEnumerable<Timetable> SortClashedPermutations(IEnumerable<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
         {
             var timetables = permutations.Select(analysePermutation);
 
