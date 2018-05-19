@@ -46,8 +46,9 @@
             subjectCodes.push(subjectCode);
         });
 
+        setStatus('Generating...');
+
         $('#timetable').fullCalendar('removeEvents');
-        $("#timetablesInfo").empty();
 
         var laterStarts = $('#laterStartsCheckbox').is(':checked');
         var lessDays = $('#lessDaysCheckbox').is(':checked');
@@ -65,15 +66,15 @@
                 $("#progressBar").progressbar('option', 'value', 100);
 
                 if (timetablesData.length === 1)
-                    $("#timetablesInfo").append('1 timetable generated');
+                    setStatus('1 timetable generated');
                 else
-                    $("#timetablesInfo").append(timetablesData.length + ' timetables generated');
+                    setStatus(timetablesData.length + ' timetables generated');
 
                 $("#slider").slider("option", "max", timetablesData.length - 1);
             },
             error: function () {
                 $("#calculateButton").attr('disabled', false);
-                $("#timetablesInfo").append('Failed to generate timetables.');
+                setStatus('Failed to generate timetables.');
             }
         });
     });
@@ -108,6 +109,11 @@
 
         return div;
     };
+
+    var setStatus = function (status) {
+        $("#timetablesInfo").empty();
+        $("#timetablesInfo").append(status);
+    }
 
     var renderTimetable = function (timetable) {
         $("#timetable").fullCalendar('gotoDate', timetable.classes[0].timeStart);
