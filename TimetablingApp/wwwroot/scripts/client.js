@@ -52,21 +52,29 @@
         var laterStarts = $('#laterStartsCheckbox').is(':checked');
         var lessDays = $('#lessDaysCheckbox').is(':checked');
 
-        var url = '/Home/GetTimetable?codes=' + subjectCodes.join('|') + '&laterStarts=' + laterStarts + '&lessDays=' + lessDays;
+        var ajaxURL = '/Home/GetTimetable?codes=' + subjectCodes.join('|') + '&laterStarts=' + laterStarts + '&lessDays=' + lessDays;
+        
+        $.ajax({
+            url: ajaxURL,
+            dataType: 'json',
+            success: function (timetablesData) {
+                $("#calculateButton").attr('disabled', false);
+                timetableList = timetablesData;
 
-        $.getJSON(url, function (timetablesData) {
-            $("#calculateButton").attr('disabled', false);
-            timetableList = timetablesData;
+                renderTimetable(timetablesData[0]);
+                $("#progressBar").progressbar('option', 'value', 100);
 
-            renderTimetable(timetablesData[0]);
-            $("#progressBar").progressbar('option','value',100);
+                if (timetablesData.length === 1)
+                    $("#timetablesInfo").append('1 timetable generated');
+                else
+                    $("#timetablesInfo").append(timetablesData.length + ' timetables generated');
 
-            if (timetablesData.length === 1)
-                $("#timetablesInfo").append('1 timetable generated');
-            else
-                $("#timetablesInfo").append(timetablesData.length + ' timetables generated');
-
-            $("#slider").slider("option", "max", timetablesData.length - 1);
+                $("#slider").slider("option", "max", timetablesData.length - 1);
+            },
+            error: function () {
+                $("#calculateButton").attr('disabled', false);
+                $("#timetablesInfo").append('Failed to generate timetables.');
+            }
         });
     });
 
