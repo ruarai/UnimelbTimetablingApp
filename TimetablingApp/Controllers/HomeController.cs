@@ -47,7 +47,8 @@ namespace TimetablingApp.Controllers
             //very gross but idk lol
             string[] subjectCodes = codes.Split('|');
 
-           
+            generatorStatusUpdate("Fetching timetables from online...");
+
             List<Subject> subjects = new List<Subject>();
             foreach(var subjectCode in subjectCodes)
             {
@@ -56,7 +57,8 @@ namespace TimetablingApp.Controllers
                 if (subject == null)
                     continue;
 
-                await subject.UpdateTimetable();
+                if(subject.Classes == null)
+                    await subject.UpdateTimetable();
 
                 subjects.Add(subject);
             }
@@ -64,19 +66,30 @@ namespace TimetablingApp.Controllers
             List<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes).ToList();
 
             Generator g = new Generator();
+            int possiblePermutations = g.PossiblePermutationsCount(classInfos);
 
             g.ProgressUpdate += generatorProgressUpdate;
 
-            List<Timetable> timetables = new List<Timetable>();
+            IEnumerable<Timetable> timetables = new List<Timetable>();
 
             int maxClashes = 0;
 
             while(!timetables.Any())
             {
                 if (maxClashes == 0)
-                    timetables = g.SortPermutations(g.GenPermutations(classInfos, maxClashes), laterStarts, lessDays).ToList();
+                {
+                    generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
+                    var permutations = g.GenPermutations(classInfos, maxClashes);
+                    generatorStatusUpdate("Sorting timetables...");
+                    timetables = g.SortPermutations(permutations, laterStarts, lessDays);
+                }
                 else
-                    timetables = g.SortClashedPermutations(g.GenPermutations(classInfos, maxClashes), laterStarts, lessDays).ToList();
+                {
+                    generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
+                    var permutations = g.GenPermutations(classInfos, maxClashes);
+                    generatorStatusUpdate("Sorting timetables...");
+                    timetables = g.SortClashedPermutations(permutations, laterStarts, lessDays);
+                }
 
                 maxClashes++;
             }
@@ -91,6 +104,11 @@ namespace TimetablingApp.Controllers
         {
             _uiHub.Clients.All.SendAsync("progress", progress);
         }
+        private void generatorStatusUpdate(string newStatus)
+        {
+            _uiHub.Clients.All.SendAsync("status", newStatus);
+        }
+
 
         public async Task<IActionResult> GetSubjectInfo(string subjectCode)
         {

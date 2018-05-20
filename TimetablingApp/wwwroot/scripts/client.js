@@ -46,7 +46,7 @@
             subjectCodes.push(subjectCode);
         });
 
-        setStatus('Generating...');
+        setStatus('Starting...');
 
         $('#timetable').fullCalendar('removeEvents');
 
@@ -89,6 +89,9 @@
 
     connection.on('progress', (message) => {
         $("#progressBar").progressbar('option','value',message*100);
+    });
+    connection.on('status', (message) => {
+        setStatus(message);
     });
 
     connection.start().catch(err => {

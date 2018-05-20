@@ -16,15 +16,20 @@ namespace Timetabling
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
             
-            int prod = 1;
-            foreach (var classInfo in classInfos)
-                prod *= classInfo.ScheduledClasses.Count;
-
-            numPredicted = prod;
+            numPredicted = PossiblePermutationsCount(classInfos);
             numGenerated = 0;
             generationMaxClashes = maxClashes;
 
             return genPermutations(classInfos, slots, 0);
+        }
+
+        public int PossiblePermutationsCount(List<ClassInfo> classInfos)
+        {
+            int prod = 1;
+            foreach (var classInfo in classInfos)
+                prod *= classInfo.ScheduledClasses.Count;
+
+            return prod;
         }
 
         private int generationMaxClashes = 0;
