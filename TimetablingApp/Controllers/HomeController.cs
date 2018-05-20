@@ -72,7 +72,7 @@ namespace TimetablingApp.Controllers
             int possiblePermutations = g.PossiblePermutationsCount(classInfos);
 
             if (possiblePermutations == 0)
-                return Json(new TimetableModel(null,"failure","No classes are scheduled within your filters."));
+                return Json(new TimetableModel(null,"failure","No classes can be scheduled within your filtered time."));
 
             g.ProgressUpdate += generatorProgressUpdate;
 
