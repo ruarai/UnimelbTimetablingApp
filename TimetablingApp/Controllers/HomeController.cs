@@ -10,6 +10,7 @@ using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using ElectronNET.API;
+using TimetablingApp.Models;
 
 namespace TimetablingApp.Controllers
 {
@@ -42,7 +43,7 @@ namespace TimetablingApp.Controllers
             return View(subjectList);
         }
 
-        public async Task<IActionResult> GetTimetable(string codes, bool laterStarts, bool lessDays)
+        public async Task<IActionResult> GetTimetable(string codes, bool laterStarts, bool lessDays, string earliestTime, string latestTime, string days)
         {
             //very gross but idk lol
             string[] subjectCodes = codes.Split('|');
@@ -63,10 +64,15 @@ namespace TimetablingApp.Controllers
                 subjects.Add(subject);
             }
 
-            List<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes).ToList();
+            IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
+
+            classInfos = filterClasses(classInfos, earliestTime, latestTime, days);
 
             Generator g = new Generator();
             int possiblePermutations = g.PossiblePermutationsCount(classInfos);
+
+            if (possiblePermutations == 0)
+                return Json(new TimetableModel(null,"failure","No classes are scheduled within your filters."));
 
             g.ProgressUpdate += generatorProgressUpdate;
 
@@ -79,14 +85,14 @@ namespace TimetablingApp.Controllers
                 if (maxClashes == 0)
                 {
                     generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
-                    var permutations = g.GenPermutations(classInfos, maxClashes);
+                    var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                     generatorStatusUpdate("Sorting timetables...");
                     timetables = g.SortPermutations(permutations, laterStarts, lessDays);
                 }
                 else
                 {
                     generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
-                    var permutations = g.GenPermutations(classInfos, maxClashes);
+                    var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                     generatorStatusUpdate("Sorting timetables...");
                     timetables = g.SortClashedPermutations(permutations, laterStarts, lessDays);
                 }
@@ -96,8 +102,9 @@ namespace TimetablingApp.Controllers
 
             //Don't send more than 25000 timetables,
             //sending more will crash the ui
-            return Json(timetables.Take(25000));
+            return Json(new TimetableModel(timetables.Take(25000),"success"));
         }
+
         private readonly IHubContext<UIHub> _uiHub;
 
         private void generatorProgressUpdate(float progress)
@@ -120,6 +127,29 @@ namespace TimetablingApp.Controllers
             await testSubject.UpdateTimetable();
 
             return Json(testSubject.Classes);
+        }
+
+        private IEnumerable<ClassInfo> filterClasses(IEnumerable<ClassInfo> classes, string earliestTimeString, string latestTimeStrng, string daysString)
+        {
+            TimeSpan earliestTime = TimeSpan.Parse(earliestTimeString);
+            TimeSpan latestTime = TimeSpan.Parse(latestTimeStrng);
+
+            foreach(var classInfo in classes)
+            {
+                ClassInfo newClassInfo = new ClassInfo { ClassName = classInfo.ClassName, ClassType = classInfo.ClassType };
+
+                newClassInfo.ScheduledClasses = classInfo.ScheduledClasses.Where(c => filterClass(c,earliestTime,latestTime,daysString)
+                                                                                   && c.ChildClasses.All(cc => filterClass(cc, earliestTime, latestTime, daysString))).ToList();
+
+                yield return newClassInfo;
+            }
+        }
+
+        private bool filterClass(ScheduledClass scheduledClass,TimeSpan earliestTime, TimeSpan latestTime, string daysString)
+        {
+            return scheduledClass.TimeStart.TimeOfDay >= earliestTime &&
+                   scheduledClass.TimeEnd.TimeOfDay <= latestTime &&
+                   daysString[(int)scheduledClass.TimeStart.DayOfWeek - 1] == '1';
         }
 
         private List<Subject> getSubjects()

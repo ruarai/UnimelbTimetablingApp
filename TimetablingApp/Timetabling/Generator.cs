@@ -12,7 +12,7 @@ namespace Timetabling
     {
         public event ProgressEvent ProgressUpdate;
 
-        public List<List<ScheduledClass>> GenPermutations(List<ClassInfo> classInfos, int maxClashes = 0)
+        public List<List<ScheduledClass>> GenPermutations(IEnumerable<ClassInfo> classInfos, int maxClashes = 0)
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
             
@@ -20,10 +20,10 @@ namespace Timetabling
             numGenerated = 0;
             generationMaxClashes = maxClashes;
 
-            return genPermutations(classInfos, slots, 0);
+            return genPermutations(classInfos.ToList(), slots, 0);
         }
 
-        public int PossiblePermutationsCount(List<ClassInfo> classInfos)
+        public int PossiblePermutationsCount(IEnumerable<ClassInfo> classInfos)
         {
             int prod = 1;
             foreach (var classInfo in classInfos)

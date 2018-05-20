@@ -52,30 +52,54 @@
 
         var laterStarts = $('#laterStartsCheckbox').is(':checked');
         var lessDays = $('#lessDaysCheckbox').is(':checked');
+        var earliestTime = $('#earliestTimeInput').val();
+        var latestTime = $('#latestTimeInput').val();
+        var days = getDays();//string of days in binary
 
-        var ajaxURL = '/Home/GetTimetable?codes=' + subjectCodes.join('|') + '&laterStarts=' + laterStarts + '&lessDays=' + lessDays;
+        var ajaxURL = '/Home/GetTimetable?codes=' + subjectCodes.join('|')
+            + '&laterStarts=' + laterStarts
+            + '&lessDays=' + lessDays
+            + '&earliestTime=' + earliestTime
+            + '&latestTime=' + latestTime
+            + '&days=' + days;
         
         $.ajax({
             url: ajaxURL,
             dataType: 'json',
-            success: function (timetablesData) {
+            success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
-                timetableList = timetablesData;
 
-                renderTimetable(timetablesData[0]);
+                if (timetableModel.resultStatus === 'failure') {
+                    setStatus(timetableModel.resultMessage);
+                    return;
+                }
+
+                timetableList = timetableModel.timetables;
+
+                renderTimetable(timetableList[0]);
                 $("#progressBar").progressbar('option', 'value', 100);
 
-                if (timetablesData.length === 1)
+                if (timetableList.length === 1)
                     setStatus('1 timetable generated');
                 else
-                    setStatus(timetablesData.length + ' timetables generated');
+                    setStatus(timetableList.length + ' timetables generated');
 
-                $("#slider").slider("option", "max", timetablesData.length - 1);
+                $("#slider").slider("option", "max", timetableList.length - 1);
             },
             error: function () {
                 $("#calculateButton").attr('disabled', false);
                 setStatus('Failed to generate timetables.');
             }
+        });
+    });
+
+    $("#dayList").children().each(function () {
+        $(this).click(function () {
+            if ($(this).attr('ticked') === 'false')
+                $(this).attr('ticked', 'true');
+            else
+                $(this).attr('ticked', 'false');
+        
         });
     });
 
@@ -116,6 +140,19 @@
     var setStatus = function (status) {
         $("#timetablesInfo").empty();
         $("#timetablesInfo").append(status);
+    }
+
+    var getDays = function () {
+        var days = '';
+
+        $('#dayList').children().each(function () {
+            if ($(this).attr('ticked') === 'true')
+                days = days + '1';
+            else
+                days = days + '0';
+        });
+
+        return days;
     }
 
     var renderTimetable = function (timetable) {

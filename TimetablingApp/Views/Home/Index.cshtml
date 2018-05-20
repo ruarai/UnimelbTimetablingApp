@@ -51,7 +51,7 @@
             </div>
             <div class="content contenttop">
                 <div class="label">
-                    Sorting options:
+                    Sorting:
                 </div>
                 <div class="sortOption">
                     <label for="laterStartsCheckbox">Prefer later starts:</label>
@@ -60,6 +60,29 @@
                 <div class="sortOption">
                     <label for="lessDaysCheckbox">Prefer less days:</label>
                     <input class="sortCheckbox" id="lessDaysCheckbox" type="checkbox" checked="checked" />
+                </div>
+            </div>
+            <div class="content contenttop">
+                <div class="label">
+                    Filtering:
+                </div>
+                <div class="sortOption">
+                    <label>Earliest class time:</label>
+                    <input id="earliestTimeInput" class="timeInput" value="08:00" type="time" />
+                </div>
+                <div class="sortOption">
+                    <label>Latest class time:</label>
+                    <input id="latestTimeInput" class="timeInput" value="22:00" type="time" />
+                </div>
+                <div class="sortOption">
+                    <label>Classes on days:</label>
+                    <div id="dayList">
+                        <button class="dayButton" ticked="true">M</button>
+                        <button class="dayButton" ticked="true">T</button>
+                        <button class="dayButton" ticked="true">W</button>
+                        <button class="dayButton" ticked="true">T</button>
+                        <button class="dayButton" ticked="true">F</button>
+                    </div>
                 </div>
             </div>
             <div class="content">
