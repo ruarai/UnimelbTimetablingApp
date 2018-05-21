@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Timetabling
@@ -14,15 +15,23 @@ namespace Timetabling
         public Subject ParentSubject => ClassInfo.ParentSubject;
         public string ClassName => ClassInfo.ClassName;
         public string ClassDescription => ClassInfo.ClassName.Split(" ")[0];//eg, Lecture, Tutorial
+
         public ClassInfo ClassInfo { get; set; }
+
+        [JsonIgnore]
         public string Location { get; set; }
+
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
 
+        [JsonIgnore]
         public short SlotStart { get { return dateToSlot(TimeStart); } }
+        [JsonIgnore]
         public short SlotEnd { get { return dateToSlot(TimeEnd); } }
 
+        [JsonIgnore]
         public TimeSpan Duration => TimeEnd - TimeStart;
+        [JsonIgnore]
         public short ClassNumber { get; set; }
 
         public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
