@@ -50,22 +50,21 @@
 
         $('#timetable').fullCalendar('removeEvents');
 
-        var laterStarts = $('#laterStartsCheckbox').is(':checked');
-        var lessDays = $('#lessDaysCheckbox').is(':checked');
-        var earliestTime = $('#earliestTimeInput').val();
-        var latestTime = $('#latestTimeInput').val();
-        var days = getDays();//string of days in binary
-
-        var ajaxURL = '/Home/GetTimetable?codes=' + subjectCodes.join('|')
-            + '&laterStarts=' + laterStarts
-            + '&lessDays=' + lessDays
-            + '&earliestTime=' + earliestTime
-            + '&latestTime=' + latestTime
-            + '&days=' + days;
+        var model = {
+            subjectCodes: subjectCodes,
+            laterStarts: $('#laterStartsCheckbox').is(':checked'),
+            lessDays: $('#lessDaysCheckbox').is(':checked'),
+            earliestClassTime: $('#earliestTimeInput').val(),
+            latestClassTime: $('#latestTimeInput').val(),
+            days: getDays()
+        };
         
         $.ajax({
-            url: ajaxURL,
+            url: '/Home/BuildTimetable',
             dataType: 'json',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(model),
             success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
 

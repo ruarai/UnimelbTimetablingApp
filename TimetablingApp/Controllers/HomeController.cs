@@ -42,16 +42,14 @@ namespace TimetablingApp.Controllers
         {
             return View(subjectList);
         }
-
-        public async Task<IActionResult> GetTimetable(string codes, bool laterStarts, bool lessDays, string earliestTime, string latestTime, string days)
+        
+        [HttpPost("/Home/BuildTimetable")]
+        public async Task<IActionResult> BuildTimetable([FromBody] TimetableOptionsModel model)
         {
-            //very gross but idk lol
-            string[] subjectCodes = codes.Split('|');
-
             generatorStatusUpdate("Fetching timetables from online...");
 
             List<Subject> subjects = new List<Subject>();
-            foreach(var subjectCode in subjectCodes)
+            foreach(var subjectCode in model.SubjectCodes)
             {
                 Subject subject = subjectList.FirstOrDefault(s => s.Code == subjectCode);
 
@@ -66,7 +64,7 @@ namespace TimetablingApp.Controllers
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
 
-            classInfos = filterClasses(classInfos, earliestTime, latestTime, days);
+            classInfos = filterClasses(classInfos, model.EarliestClassTime, model.LatestClassTime, model.Days);
 
             Generator g = new Generator();
             int possiblePermutations = g.PossiblePermutationsCount(classInfos);
@@ -87,14 +85,14 @@ namespace TimetablingApp.Controllers
                     generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
                     var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                     generatorStatusUpdate("Sorting timetables...");
-                    timetables = g.SortPermutations(permutations, laterStarts, lessDays);
+                    timetables = g.SortPermutations(permutations, model.LaterStarts, model.LessDays);
                 }
                 else
                 {
                     generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
                     var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                     generatorStatusUpdate("Sorting timetables...");
-                    timetables = g.SortClashedPermutations(permutations, laterStarts, lessDays);
+                    timetables = g.SortClashedPermutations(permutations, model.LaterStarts, model.LessDays);
                 }
 
                 maxClashes++;
