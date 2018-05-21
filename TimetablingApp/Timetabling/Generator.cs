@@ -20,6 +20,10 @@ namespace Timetabling
             numGenerated = 0;
             generationMaxClashes = maxClashes;
 
+            //Order classes so that we start from least number of possible choices to most
+            //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
+            List<ClassInfo> sortedClassInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count).ToList();
+
             return genPermutations(classInfos.ToList(), slots, 0);
         }
 

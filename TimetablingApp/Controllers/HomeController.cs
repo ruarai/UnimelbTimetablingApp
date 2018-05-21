@@ -32,6 +32,8 @@ namespace TimetablingApp.Controllers
             }
         }
 
+        private static List<Timetable> lastTimetables = null;
+
         public HomeController(IHostingEnvironment environment, IHubContext<UIHub> hubContext)
         {
             _hostingEnvironment = environment;
@@ -70,37 +72,41 @@ namespace TimetablingApp.Controllers
             int possiblePermutations = g.PossiblePermutationsCount(classInfos);
 
             if (possiblePermutations == 0)
-                return Json(new TimetableModel(null,"failure","No classes can be scheduled within your filtered time."));
+                return Json(new TimetableBuildResultModel(null, 0, "failure","No classes can be scheduled within your filtered time."));
 
             g.ProgressUpdate += generatorProgressUpdate;
 
-            IEnumerable<Timetable> timetables = new List<Timetable>();
+            lastTimetables = new List<Timetable>();
 
             int maxClashes = 0;
 
-            while(!timetables.Any())
+            while(!lastTimetables.Any())
             {
                 if (maxClashes == 0)
                 {
-                    generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
+                    generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
                     var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                     generatorStatusUpdate("Sorting timetables...");
-                    timetables = g.SortPermutations(permutations, model.LaterStarts, model.LessDays);
+                    lastTimetables = g.SortPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
                 }
                 else
                 {
-                    generatorStatusUpdate("Generating up to " + possiblePermutations + " timetables...");
+                    generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
                     var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                     generatorStatusUpdate("Sorting timetables...");
-                    timetables = g.SortClashedPermutations(permutations, model.LaterStarts, model.LessDays);
+                    lastTimetables = g.SortClashedPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
                 }
 
                 maxClashes++;
             }
 
-            //Don't send more than 25000 timetables,
-            //sending more will crash the ui
-            return Json(new TimetableModel(timetables.Take(25000),"success"));
+            generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}...", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : " "));
+            return Json(new TimetableBuildResultModel(lastTimetables[0], lastTimetables.Count,"success"));
+        }
+
+        public IActionResult GetTimetable(int index)
+        {
+            return Json(lastTimetables[index]);
         }
 
         private readonly IHubContext<UIHub> _uiHub;

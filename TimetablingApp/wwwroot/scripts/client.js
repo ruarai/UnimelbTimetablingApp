@@ -1,6 +1,4 @@
 ﻿$(function () {
-    var timetableList = [];
-    
     var names = subjectList.map(function (item) {
         return item['DisplayName'];
     });
@@ -25,11 +23,32 @@
     });
 
     $("#progressBar").progressbar({ value: 0 });
+
+
+    var previousTimetableRequest = null;
+    var previousTimetableRequestTime = new Date().getTime();
     $("#slider").slider({
         slide: function (event, ui) {
+            var index = ui.value;
 
-            $('#timetable').fullCalendar('removeEvents');
-            renderTimetable(timetableList[ui.value]);
+            console.log(index);
+
+            previousTimetableRequest = $.ajax({
+                url: 'Home/GetTimetable?index=' + index,
+                dataType: 'json',
+                type: 'GET',
+                beforeSend: function () {
+                    if (previousTimetableRequest != null && previousTimetableRequestTime + 50 < new Date().getTime())
+                        previousTimetableRequest.abort();
+                },
+                success: function (timetable) {
+                    console.log(timetable);
+                    $('#timetable').fullCalendar('removeEvents');
+                    renderTimetable(timetable);
+
+                    previousTimetableRequestTime = new Date().getTime();
+                }
+                });
         }
     });
     
@@ -72,18 +91,11 @@
                     setStatus(timetableModel.resultMessage);
                     return;
                 }
-
-                timetableList = timetableModel.timetables;
-
-                renderTimetable(timetableList[0]);
+                
+                renderTimetable(timetableModel.topTimetable);
                 $("#progressBar").progressbar('option', 'value', 100);
 
-                if (timetableList.length === 1)
-                    setStatus('1 timetable generated');
-                else
-                    setStatus(timetableList.length + ' timetables generated');
-
-                $("#slider").slider("option", "max", timetableList.length - 1);
+                $("#slider").slider("option", "max", timetableModel.numberTimetables - 1);
             },
             error: function () {
                 $("#calculateButton").attr('disabled', false);
