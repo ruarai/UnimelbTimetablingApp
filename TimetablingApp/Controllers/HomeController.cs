@@ -70,7 +70,7 @@ namespace TimetablingApp.Controllers
             classInfos = filterClasses(classInfos, model.EarliestClassTime, model.LatestClassTime, model.Days);
 
             Generator g = new Generator();
-            int possiblePermutations = g.PossiblePermutationsCount(classInfos);
+            int possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
 
             if (possiblePermutations == 0)
                 return Json(new TimetableBuildResultModel(null, 0, "failure", "No classes can be scheduled within your filtered time."));
@@ -87,14 +87,14 @@ namespace TimetablingApp.Controllers
                 {
                     if (maxClashes == 0)
                     {
-                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
+                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : ""));
                         var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                         generatorStatusUpdate("Sorting timetables...");
                         lastTimetables = g.SortPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
                     }
                     else
                     {
-                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
+                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : ""));
                         var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
                         generatorStatusUpdate("Sorting timetables...");
                         lastTimetables = g.SortClashedPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
@@ -110,7 +110,7 @@ namespace TimetablingApp.Controllers
                 maxClashes++;
             }
 
-            generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}.", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : " "));
+            generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}.", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : ""));
             return Json(new TimetableBuildResultModel(lastTimetables[0], lastTimetables.Count,"success"));
         }
 
@@ -129,6 +129,10 @@ namespace TimetablingApp.Controllers
         {
             _uiHub.Clients.All.SendAsync("status", newStatus);
         }
+        private void subjectInfoUpdate(string subjectInfo)
+        {
+            _uiHub.Clients.All.SendAsync("subjectInfo", subjectInfo);
+        }
 
 
         public async Task<IActionResult> GetSubjectInfo(string subjectCode)
@@ -141,6 +145,31 @@ namespace TimetablingApp.Controllers
             await testSubject.UpdateTimetable();
 
             return Json(testSubject.Classes);
+        }
+
+        [HttpPost("/Home/UpdateSelectedSubjects")]
+        public async void UpdateSelectedSubjects([FromBody]List<string> subjectCodes)
+        {
+            List<Subject> subjects = new List<Subject>();
+            foreach (var subjectCode in subjectCodes)
+            {
+                Subject subject = subjectList.FirstOrDefault(s => s.Code == subjectCode);
+
+                if (subject == null)
+                    continue;
+
+                if (subject.Classes == null)
+                    await subject.UpdateTimetable();
+
+                subjects.Add(subject);
+            }
+
+            int numPermutations = Generator.PossiblePermutationsCount(subjects.SelectMany(s => s.Classes));
+            
+            if(numPermutations > 1)
+                subjectInfoUpdate(string.Format("{0:n0} possible timetables.", numPermutations));
+            else
+                subjectInfoUpdate("");
         }
 
         private IEnumerable<ClassInfo> filterClasses(IEnumerable<ClassInfo> classes, string earliestTimeString, string latestTimeStrng, string daysString)

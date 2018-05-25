@@ -10,6 +10,8 @@
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
         $("#subjectList").append(buildSubjectListing(this.value));
         $("#subjectSearch").val("");
+
+        updateSubjectInfo();
     });
 
     $("#timetable").fullCalendar({
@@ -39,11 +41,10 @@
                     dataType: 'json',
                     type: 'GET',
                     beforeSend: function () {
-                        if (previousTimetableRequest != null)
+                        if (previousTimetableRequest !== null)
                             previousTimetableRequest.abort();
                     },
                     success: function (timetable) {
-                        console.log(timetable);
                         $('#timetable').fullCalendar('removeEvents');
                         renderTimetable(timetable);
                     }
@@ -56,14 +57,7 @@
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
 
-        var subjectCodes = [];
-
-        $("#subjectList").children().each(function () {
-            var subjectFullName = $(this).text().trim();
-
-            var subjectCode = subjectFullName.split(' ')[0];
-            subjectCodes.push(subjectCode);
-        });
+        var subjectCodes = getSubjectCodes();
 
         setStatus('Starting...');
 
@@ -129,6 +123,10 @@
     connection.on('status', (message) => {
         setStatus(message);
     });
+    connection.on('subjectInfo', (message) => {
+        $("#subjectInfo").empty();
+        $("#subjectInfo").append(message);
+    });
 
     connection.start().catch(err => {
         console.log('connection error');
@@ -141,6 +139,7 @@
         var removeButton = $('<a class="inlineAction"> (del)</a>');
         removeButton.click(function () {
             this.parentNode.parentNode.removeChild(this.parentNode);
+            updateSubjectInfo();
         });
 
         div.append(removeButton);
@@ -148,6 +147,30 @@
 
         return div;
     };
+
+    var getSubjectCodes = function () {
+        var subjectCodes = [];
+
+        $("#subjectList").children().each(function () {
+            var subjectFullName = $(this).text().trim();
+
+            var subjectCode = subjectFullName.split(' ')[0];
+            subjectCodes.push(subjectCode);
+        });
+
+        return subjectCodes;
+    }
+
+    var updateSubjectInfo = function () {
+        $.ajax({
+            url: '/Home/UpdateSelectedSubjects',
+            dataType: 'json',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(getSubjectCodes())
+        });
+    }
+
 
     var setStatus = function (status) {
         $("#timetablesInfo").empty();

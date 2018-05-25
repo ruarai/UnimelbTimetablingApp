@@ -37,7 +37,7 @@ namespace Timetabling
             return classes;
         }
 
-        public int PossiblePermutationsCount(IEnumerable<ClassInfo> classInfos)
+        public static int PossiblePermutationsCount(IEnumerable<ClassInfo> classInfos)
         {
             int prod = 1;
             foreach (var classInfo in classInfos)
