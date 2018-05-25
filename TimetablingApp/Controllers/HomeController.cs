@@ -100,7 +100,7 @@ namespace TimetablingApp.Controllers
                 maxClashes++;
             }
 
-            generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}...", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : " "));
+            generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}.", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : " "));
             return Json(new TimetableBuildResultModel(lastTimetables[0], lastTimetables.Count,"success"));
         }
 
