@@ -31,27 +31,27 @@
         slide: function (event, ui) {
             var index = ui.value;
 
-            console.log(index);
+            if (previousTimetableRequestTime + 50 < new Date().getTime()) {
+                previousTimetableRequestTime = new Date().getTime();
 
-            previousTimetableRequest = $.ajax({
-                url: 'Home/GetTimetable?index=' + index,
-                dataType: 'json',
-                type: 'GET',
-                beforeSend: function () {
-                    if (previousTimetableRequest != null && previousTimetableRequestTime + 50 < new Date().getTime())
-                        previousTimetableRequest.abort();
-                },
-                success: function (timetable) {
-                    console.log(timetable);
-                    $('#timetable').fullCalendar('removeEvents');
-                    renderTimetable(timetable);
-
-                    previousTimetableRequestTime = new Date().getTime();
-                }
+                previousTimetableRequest = $.ajax({
+                    url: 'Home/GetTimetable?index=' + index,
+                    dataType: 'json',
+                    type: 'GET',
+                    beforeSend: function () {
+                        if (previousTimetableRequest != null)
+                            previousTimetableRequest.abort();
+                    },
+                    success: function (timetable) {
+                        console.log(timetable);
+                        $('#timetable').fullCalendar('removeEvents');
+                        renderTimetable(timetable);
+                    }
                 });
+            }
         }
     });
-    
+
 
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
@@ -77,13 +77,14 @@
             latestClassTime: $('#latestTimeInput').val(),
             days: getDays()
         };
-        
+
         $.ajax({
             url: '/Home/BuildTimetable',
             dataType: 'json',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(model),
+            async: true,
             success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
 
@@ -91,7 +92,7 @@
                     setStatus(timetableModel.resultMessage);
                     return;
                 }
-                
+
                 renderTimetable(timetableModel.topTimetable);
                 $("#progressBar").progressbar('option', 'value', 100);
 
@@ -110,7 +111,7 @@
                 $(this).attr('ticked', 'true');
             else
                 $(this).attr('ticked', 'false');
-        
+
         });
     });
 
@@ -123,7 +124,7 @@
     };
 
     connection.on('progress', (message) => {
-        $("#progressBar").progressbar('option','value',message*100);
+        $("#progressBar").progressbar('option', 'value', message * 100);
     });
     connection.on('status', (message) => {
         setStatus(message);
@@ -207,8 +208,8 @@
         var r = parseInt(hex.slice(0, 2), 16),
             g = parseInt(hex.slice(2, 4), 16),
             b = parseInt(hex.slice(4, 6), 16);
-       // http://stackoverflow.com/a/3943023/112731
-       return r * 0.299 + g * 0.587 + b * 0.114 > 186 ? '#000000' : '#FFFFFF';
+        // http://stackoverflow.com/a/3943023/112731
+        return r * 0.299 + g * 0.587 + b * 0.114 > 186 ? '#000000' : '#FFFFFF';
     }
 });
 
