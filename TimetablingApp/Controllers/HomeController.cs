@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using ElectronNET.API;
 using TimetablingApp.Models;
+using System.Threading;
 
 namespace TimetablingApp.Controllers
 {
@@ -72,7 +73,7 @@ namespace TimetablingApp.Controllers
             int possiblePermutations = g.PossiblePermutationsCount(classInfos);
 
             if (possiblePermutations == 0)
-                return Json(new TimetableBuildResultModel(null, 0, "failure","No classes can be scheduled within your filtered time."));
+                return Json(new TimetableBuildResultModel(null, 0, "failure", "No classes can be scheduled within your filtered time."));
 
             g.ProgressUpdate += generatorProgressUpdate;
 
@@ -82,20 +83,29 @@ namespace TimetablingApp.Controllers
 
             while(!lastTimetables.Any())
             {
-                if (maxClashes == 0)
+                try
                 {
-                    generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
-                    var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
-                    generatorStatusUpdate("Sorting timetables...");
-                    lastTimetables = g.SortPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
+                    if (maxClashes == 0)
+                    {
+                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
+                        var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
+                        generatorStatusUpdate("Sorting timetables...");
+                        lastTimetables = g.SortPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
+                    }
+                    else
+                    {
+                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
+                        var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
+                        generatorStatusUpdate("Sorting timetables...");
+                        lastTimetables = g.SortClashedPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
+                    }
                 }
-                else
+                catch (InsufficientMemoryException)
                 {
-                    generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : " "));
-                    var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
-                    generatorStatusUpdate("Sorting timetables...");
-                    lastTimetables = g.SortClashedPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
+                    return Json(new TimetableBuildResultModel(null, 0, "failure", "Timetables could not be generated as the generator ran out of memory. " +
+                                                                                  "Try adding additional filtering to reduce the number of possible timetables."));
                 }
+
 
                 maxClashes++;
             }

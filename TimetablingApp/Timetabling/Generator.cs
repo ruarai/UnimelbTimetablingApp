@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Timetabling
@@ -24,7 +26,15 @@ namespace Timetabling
             //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
             List<ClassInfo> sortedClassInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count).ToList();
 
-            return genPermutations(classInfos.ToList(), slots, 0);
+
+            //Make sure we don't reach a point where a memory error is likely to occur
+            //Set 128MB as a safe limit
+            //An InsufficientMemoryException will be raised if this fails
+            MemoryFailPoint failPoint = new MemoryFailPoint(128);
+
+            var classes = genPermutations(classInfos.ToList(), slots, 0);
+
+            return classes;
         }
 
         public int PossiblePermutationsCount(IEnumerable<ClassInfo> classInfos)
@@ -47,15 +57,20 @@ namespace Timetabling
             var permutations = new List<List<ScheduledClass>>();
             foreach (var scheduledClass in classInfos[depth].ScheduledClasses)
             {
+                //If we have too many clashes, give up
                 if (numClashes(scheduledClass, slots) > generationMaxClashes)
                     continue;
 
+                //Check if we're at the base case (at the final classInfo)
                 if (depth != classInfos.Count - 1)
                 {
+                    //If we're not, generate sub-permutations recursively
                     var depthPerms = genPermutations(classInfos, updateSlots(scheduledClass, slots), depth + 1);
                     
+                    //Try and update our progress (flaky, could be improved)
                     ProgressUpdate?.Invoke((float)numGenerated / numPredicted);
 
+                    //Add our class to each of the generated sub-permutations, then add those sub-permutations to our final list of permutations
                     foreach (var depthPerm in depthPerms)
                     {
                         depthPerm.Add(scheduledClass);
@@ -64,10 +79,12 @@ namespace Timetabling
                 }
                 else
                 {
+                    //We're at the end, so we have one possibility for our permutation: just the current class
                     permutations.Add(new List<ScheduledClass> { scheduledClass });
                 }
             }
 
+            //Return our new list
             return permutations;
         }
 
