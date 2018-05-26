@@ -59,13 +59,13 @@ namespace TimetablingApp.Controllers
                 if (subject == null)
                     continue;
 
-                if(subject.Classes == null)
+                if(subject.ClassInfos == null)
                     await subject.UpdateTimetable();
 
                 subjects.Add(subject);
             }
 
-            IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
+            IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
 
             Generator g = new Generator { SortLaterStarts = model.LaterStarts, SortLessDays = model.LessDays };
             long possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
@@ -111,7 +111,7 @@ namespace TimetablingApp.Controllers
 
             await testSubject.UpdateTimetable();
 
-            return Json(testSubject.Classes);
+            return Json(testSubject.ClassInfos);
         }
 
         [HttpPost("/Home/UpdateSelectedSubjects")]
@@ -125,7 +125,7 @@ namespace TimetablingApp.Controllers
                 if (subject == null)
                     continue;
 
-                if (subject.Classes == null)
+                if (subject.ClassInfos == null)
                     await subject.UpdateTimetable();
 
                 subjects.Add(subject);
@@ -135,28 +135,13 @@ namespace TimetablingApp.Controllers
             if(!subjects.Any())
                 return Json(0);
 
-            IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
+            IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
 
             long numPermutations = Generator.PossiblePermutationsCount(classInfos);
 
             return Json(numPermutations);
         }
-
-        private IEnumerable<ClassInfo> filterClasses(IEnumerable<ClassInfo> classes, string earliestTimeString, string latestTimeStrng, string daysString)
-        {
-            TimeSpan earliestTime = TimeSpan.Parse(earliestTimeString);
-            TimeSpan latestTime = TimeSpan.Parse(latestTimeStrng);
-
-            foreach(var classInfo in classes)
-            {
-                ClassInfo newClassInfo = new ClassInfo { ClassName = classInfo.ClassName, ClassType = classInfo.ClassType };
-
-                newClassInfo.ScheduledClasses = classInfo.ScheduledClasses.Where(c => filterClass(c,earliestTime,latestTime,daysString)
-                                                                                   && c.ChildClasses.All(cc => filterClass(cc, earliestTime, latestTime, daysString))).ToList();
-
-                yield return newClassInfo;
-            }
-        }
+        
 
         private bool filterClass(ScheduledClass scheduledClass,TimeSpan earliestTime, TimeSpan latestTime, string daysString)
         {

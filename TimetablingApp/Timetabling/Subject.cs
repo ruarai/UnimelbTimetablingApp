@@ -18,11 +18,20 @@ namespace Timetabling
         public string DisplayName => Code + " " + Name;
 
         [JsonIgnore]
-        public List<ClassInfo> Classes { get; set; }
+        public List<ClassInfo> ClassInfos { get; set; }
+
+        [JsonIgnore]
+        public IEnumerable<ScheduledClass> AllClasses { get
+            {
+                var childClasses = ClassInfos.SelectMany(classInfo => classInfo.ScheduledClasses).SelectMany(sc => sc.ChildClasses);
+
+                return ClassInfos.SelectMany(classInfo => classInfo.ScheduledClasses).Concat(childClasses);
+            }
+        }
 
         public async Task UpdateTimetable()
         {
-            Classes = new List<ClassInfo>();
+            ClassInfos = new List<ClassInfo>();
 
             string resultStr = await getTimetableHTML(Code);
 
@@ -73,7 +82,7 @@ namespace Timetabling
                     if (info[4].Contains("Breakout"))
                         continue;
 
-                    var classInfo = Classes.FirstOrDefault(c => c.ClassType == info[4]);
+                    var classInfo = ClassInfos.FirstOrDefault(c => c.ClassType == info[4]);
 
                     if (classInfo != null)
                     {
@@ -90,21 +99,18 @@ namespace Timetabling
                             ClassType = info[4]
                         };
                         scheduledClass.ClassInfo = classInfo;
-                        Classes.Add(classInfo);
+                        ClassInfos.Add(classInfo);
                     }
                 }
                 catch (Exception)//Sadly can't trust timetable to be in correct format
                 {   }
             }
 
-            //Consolidating lecture/tute/seminar streams: (dangerous?)
-            consolidateStreams("L");
-            consolidateStreams("T");
-            consolidateStreams("S");
+            consolidateClasses();
 
             //Removing equivalent classes:
 
-            foreach (var classInfo in Classes)
+            foreach (var classInfo in ClassInfos)
             {
                 var removals = new List<ScheduledClass>();//Can't remove them during enumeration, must collect to remove later
                 foreach (var scheduledClass in classInfo.ScheduledClasses)
@@ -122,7 +128,7 @@ namespace Timetabling
 
             DateTime earliestClass = DateTime.MaxValue;
 
-            foreach (var scheduledClass in Classes.SelectMany(classInfo => classInfo.ScheduledClasses))
+            foreach (var scheduledClass in AllClasses)
             {
                 if (scheduledClass.TimeStart < earliestClass)
                     earliestClass = scheduledClass.TimeStart;
@@ -130,7 +136,7 @@ namespace Timetabling
             int earliestWeek = getWeekOfYear(earliestClass);
 
 
-            foreach (var scheduledClass in Classes.SelectMany(classInfo => classInfo.ScheduledClasses))
+            foreach (var scheduledClass in AllClasses)
             {
                 while(getWeekOfYear(scheduledClass.TimeStart) > earliestWeek)
                 {
@@ -140,9 +146,21 @@ namespace Timetabling
             }
         }
 
+        private void consolidateClasses()
+        {
+            //Consolidating lecture/tute/seminar streams: (dangerous?)
+            consolidateStreams("L");
+            consolidateStreams("T");
+            consolidateStreams("S");
+
+            //Add exceptions to the common standards here
+            if(Code == "MAST10007")
+                consolidateStreams("P");
+        }
+
         private void consolidateStreams(string classCode)
         {
-            var streamedClasses = Classes.Where(c => c.ClassType.StartsWith(classCode)).OrderBy(c => c.ClassType);
+            var streamedClasses = ClassInfos.Where(c => c.ClassType.StartsWith(classCode)).OrderBy(c => c.ClassType);
 
             if (!streamedClasses.Any())
                 return;
@@ -158,7 +176,7 @@ namespace Timetabling
             }
 
             foreach (var c in streamedClasses.Skip(1))
-                Classes.Remove(c);   
+                ClassInfos.Remove(c);   
         }
 
         private int getWeekOfYear(DateTime dt)
@@ -169,6 +187,10 @@ namespace Timetabling
 
         private bool classEquivalent(ScheduledClass a, ScheduledClass b)
         {
+            //optimising this way not worth it if there are child classes
+            if (a.ChildClasses.Any() || b.ChildClasses.Any())
+                return false;
+
             return a.SlotStart == b.SlotStart && a.SlotEnd == b.SlotEnd;
         }
 
