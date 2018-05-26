@@ -105,9 +105,9 @@ namespace Timetabling
             return classes;
         }
 
-        public static int PossiblePermutationsCount(IEnumerable<ClassInfo> classInfos)
+        public static long PossiblePermutationsCount(IEnumerable<ClassInfo> classInfos)
         {
-            int prod = 1;
+            long prod = 1;
             foreach (var classInfo in classInfos)
                 prod *= classInfo.ScheduledClasses.Count;
 
@@ -115,8 +115,8 @@ namespace Timetabling
         }
 
         private int generationMaxClashes = 0;
-        private int numPredicted = 0;
-        private int numGenerated = 0;
+        private long numPredicted = 0;
+        private long numGenerated = 0;
 
         private List<List<ScheduledClass>> genPermutations(List<ClassInfo> classInfos, byte[] slots, int depth)
         {

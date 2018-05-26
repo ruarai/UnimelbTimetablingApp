@@ -68,7 +68,7 @@ namespace TimetablingApp.Controllers
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
 
             Generator g = new Generator();
-            int possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
+            long possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
 
             if (possiblePermutations == 0)
                 return Json(new TimetableBuildResultModel(null, 0, "failure", "No classes can be scheduled within your filtered time."));
@@ -166,7 +166,7 @@ namespace TimetablingApp.Controllers
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
 
-            int numPermutations = Generator.PossiblePermutationsCount(classInfos);
+            long numPermutations = Generator.PossiblePermutationsCount(classInfos);
             
             if(numPermutations > 1)
                 return Json(string.Format("{0:n0} possible timetables.", numPermutations));
