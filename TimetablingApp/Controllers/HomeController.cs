@@ -131,14 +131,15 @@ namespace TimetablingApp.Controllers
                 subjects.Add(subject);
             }
 
+            //No subjects? No possible timetables.
+            if(!subjects.Any())
+                return Json(0);
+
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
 
             long numPermutations = Generator.PossiblePermutationsCount(classInfos);
-            
-            if(numPermutations > 1)
-                return Json(string.Format("{0:n0} possible timetables.", numPermutations));
-            else
-                return Json("No possible timetables under these filters.");
+
+            return Json(numPermutations);
         }
 
         private IEnumerable<ClassInfo> filterClasses(IEnumerable<ClassInfo> classes, string earliestTimeString, string latestTimeStrng, string daysString)

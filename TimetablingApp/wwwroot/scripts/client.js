@@ -154,10 +154,19 @@
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(model),
-            success: function (message) {
+            success: function (numPermutations) {
                 $("#subjectInfo").empty();
-                $("#subjectInfo").append(message);
-                $("#calculateButton").attr('disabled', false);
+
+                if (numPermutations > 0) {
+                    $("#subjectInfo").append(numPermutations.toLocaleString() + ' possible timetables.');
+                    $("#calculateButton").attr('disabled', false);
+                }
+                else {
+                    $("#subjectInfo").append('Select some subjects to begin.');
+                    //keep disabled until permutations possible
+                    $("#calculateButton").attr('disabled', true);
+                }
+
             }
         });
     }

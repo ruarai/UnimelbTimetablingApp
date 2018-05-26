@@ -48,8 +48,6 @@
                 <hr />
                 <div id="subjectList">
                 </div>
-                <div id="subjectInfo">
-                </div>
             </div>
             <div class="content contenttop">
                 <div class="label">
@@ -64,12 +62,22 @@
                     <input class="sortCheckbox" id="lessDaysCheckbox" type="checkbox" checked="checked" />
                 </div>
             </div>
-            <div class="content">
+            <div class="content contenttop">
                 <div class="label">
                     3. Generation:
                 </div>
-                <button id="calculateButton">Generate</button>
-                <div id="progressBar"></div>
+                <button id="calculateButton" disabled="true">Generate</button>
+                <div id="subjectInfo">
+                    Select some subjects to begin.
+                </div>
+            </div>
+            <div class="content">
+                <div class="label">
+                    4. Selection:
+                </div>
+                <div>
+                    Slide to select your timetable:
+                </div>
                 <div id="slider"></div>
                 <div id="timetablesInfo"></div>
             </div>
