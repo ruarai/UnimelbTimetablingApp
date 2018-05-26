@@ -129,12 +129,7 @@ namespace Timetabling
             //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
             List<ClassInfo> sortedClassInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count).ToList();
 
-
-            //Make sure we don't reach a point where a memory error is likely to occur
-            //Set 128MB as a safe limit
-            //An InsufficientMemoryException will be raised if this fails
-            MemoryFailPoint failPoint = new MemoryFailPoint(128);
-
+            
             var classes = genPermutations(classInfos.ToList(), slots, 0);
 
             return classes;
