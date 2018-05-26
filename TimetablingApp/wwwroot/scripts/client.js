@@ -24,8 +24,6 @@
         displayEventTime: false
     });
 
-    $("#progressBar").progressbar({ value: 0 });
-
 
     var previousTimetableRequest = null;
     var previousTimetableRequestTime = new Date().getTime();
@@ -85,7 +83,6 @@
                 }
 
                 renderTimetable(timetableModel.topTimetable);
-                $("#progressBar").progressbar('option', 'value', 100);
 
                 $("#slider").slider("option", "max", timetableModel.numberTimetables - 1);
             },
@@ -104,10 +101,7 @@
     connection.onClosed = e => {
         console.log('connection to ui lost');
     };
-
-    connection.on('progress', (message) => {
-        $("#progressBar").progressbar('option', 'value', message * 100);
-    });
+    
     connection.on('status', (message) => {
         setStatus(message);
     });

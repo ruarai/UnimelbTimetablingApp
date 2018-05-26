@@ -8,12 +8,9 @@ using System.Threading.Tasks;
 
 namespace Timetabling
 {
-    internal delegate void ProgressEvent(float progress);
 
     class Generator
     {
-        public event ProgressEvent ProgressUpdate;
-
         public bool SortLaterStarts { get; set; }
         public bool SortLessDays { get; set; }
 
@@ -180,9 +177,6 @@ namespace Timetabling
                     //Our permutation is no good, continue
                     if (depthPerms == null)
                         continue;
-
-                    //Try and update our progress (flaky, could be improved)
-                    ProgressUpdate?.Invoke((float)numGenerated / numPredicted);
 
                     //Add our class to each of the generated sub-permutations, then add those sub-permutations to our final list of permutations
                     foreach (var depthPerm in depthPerms)

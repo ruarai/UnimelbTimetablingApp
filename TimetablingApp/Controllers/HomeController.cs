@@ -73,8 +73,6 @@ namespace TimetablingApp.Controllers
             if (possiblePermutations == 0)
                 return Json(new TimetableBuildResultModel(null, 0, "failure", "No classes can be scheduled within your filtered time."));
 
-            g.ProgressUpdate += generatorProgressUpdate;
-
             generatorStatusUpdate("Generating timetables...");
 
             //Check what algorithm to use, if we have over 5M permutations use the expanding algorithm
@@ -94,10 +92,6 @@ namespace TimetablingApp.Controllers
 
         private readonly IHubContext<UIHub> _uiHub;
 
-        private void generatorProgressUpdate(float progress)
-        {
-            _uiHub.Clients.All.SendAsync("progress", progress);
-        }
         private void generatorStatusUpdate(string newStatus)
         {
             _uiHub.Clients.All.SendAsync("status", newStatus);
