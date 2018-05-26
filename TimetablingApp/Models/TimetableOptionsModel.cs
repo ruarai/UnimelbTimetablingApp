@@ -11,9 +11,5 @@ namespace TimetablingApp.Models
 
         public bool LaterStarts { get; set; }
         public bool LessDays { get; set; }
-
-        public string EarliestClassTime { get; set; }
-        public string LatestClassTime { get; set; }
-        public string Days { get; set; }
     }
 }

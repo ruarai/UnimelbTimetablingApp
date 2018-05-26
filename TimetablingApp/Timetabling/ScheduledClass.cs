@@ -34,9 +34,13 @@ namespace Timetabling
         [JsonIgnore]
         public short ClassNumber { get; set; }
 
+        [JsonIgnore]
+        public bool DoTimetable { get; set; } = false;
+
         public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
         //Classes that are of the same number, e.g. stream lectures
         //These classes are dependent entirely upon the scheduling of this class.
+
         
 
         private static short dateToSlot(DateTime dt)

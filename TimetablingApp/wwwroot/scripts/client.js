@@ -66,10 +66,7 @@
         var model = {
             subjectCodes: subjectCodes,
             laterStarts: $('#laterStartsCheckbox').is(':checked'),
-            lessDays: $('#lessDaysCheckbox').is(':checked'),
-            earliestClassTime: $('#earliestTimeInput').val(),
-            latestClassTime: $('#latestTimeInput').val(),
-            days: getDays()
+            lessDays: $('#lessDaysCheckbox').is(':checked')
         };
 
         $.ajax({
@@ -98,16 +95,7 @@
             }
         });
     });
-
-    $("#dayList").children().each(function () {
-        $(this).click(function () {
-            if ($(this).attr('ticked') === 'false')
-                $(this).attr('ticked', 'true');
-            else
-                $(this).attr('ticked', 'false');
-
-        });
-    });
+   
 
     let connection = new signalR.HubConnectionBuilder()
         .withUrl("/ui")
@@ -123,11 +111,6 @@
     connection.on('status', (message) => {
         setStatus(message);
     });
-    connection.on('subjectInfo', (message) => {
-        $("#subjectInfo").empty();
-        $("#subjectInfo").append(message);
-    });
-
     connection.start().catch(err => {
         console.log('connection error');
         console.log(err);
@@ -162,12 +145,26 @@
     }
 
     var updateSubjectInfo = function () {
+        //disable calculation whilst this happens, otherwise weird stuff can happen with timetable retrieval internally
+        $("#calculateButton").attr('disabled', true);
+
+
+        //all filtering/subject info
+        var model = {
+            subjectCodes: getSubjectCodes()
+        };
+
         $.ajax({
             url: '/Home/UpdateSelectedSubjects',
             dataType: 'json',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(getSubjectCodes())
+            data: JSON.stringify(model),
+            success: function (message) {
+                $("#subjectInfo").empty();
+                $("#subjectInfo").append(message);
+                $("#calculateButton").attr('disabled', false);
+            }
         });
     }
 

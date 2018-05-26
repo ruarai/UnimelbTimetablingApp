@@ -14,10 +14,78 @@ namespace Timetabling
     {
         public event ProgressEvent ProgressUpdate;
 
+        public List<Timetable> GeneratePermutationsExpanding(IEnumerable<ClassInfo> classInfos)
+        {
+            //preferred class time we will expand from
+            int preferredTime = 9 * 4;
+            //Time in hours from the preferred time we will try to schedule within
+            int period = 0;
+
+            List<ScheduledClass> classes = classInfos.SelectMany(ci => ci.ScheduledClasses).ToList();
+            classes.ForEach(c => c.DoTimetable = false);
+            List<Timetable> timetables = new List<Timetable>();
+
+            int numAllowedClashes = 0;
+            while (!timetables.Any() || !classesValid(classInfos))
+            {
+                period += 4;//Take an hour
+
+                //array of days we'll try to schedule on
+                bool[] days = new bool[] { true, true, true, true, true };
+
+                bool[] allowedSlots = new bool[24 * 4 * 5];//15 min slots over the 5 day class period
+                for (int day = 0; day < 5; day++)
+                {
+                    //Calculate the first slot of the day
+                    int daySlot = day * 24 * 4;
+
+                    //Check iff we want to schedule on this day
+                    if (days[day])
+                    {
+                        //Starting from our preferred time, set our desired periods to true
+                        for (int quarters = preferredTime; quarters < preferredTime + period; quarters++)
+                            allowedSlots[daySlot + quarters] = true;
+
+                    }
+                }
+
+                //Make sure each class is only timetabled if it is within our new period
+                classes.ForEach(c => c.DoTimetable = (allowedSlots[c.SlotStart] && allowedSlots[c.SlotEnd]));
+
+                if (!classesValid(classInfos))
+                    continue;
+
+                var slots = new byte[24 * 4 * 5];
+                var permutations = genPermutations(classInfos.ToList(), slots, numAllowedClashes);
+
+                if (permutations == null)
+                    continue;
+
+                permutations = permutations.Where(p => permutationValid(p, classInfos)).ToList();
+
+                timetables = permutations.Select(analysePermutation).ToList();
+                numAllowedClashes++;
+            }
+
+            return timetables;
+        }
+
+        private bool classesValid(IEnumerable<ClassInfo> classInfos)
+        {
+            //For every classInfo,
+            foreach (var classInfo in classInfos)
+            {
+                if (!classInfo.ScheduledClasses.Any(scheduledClass => scheduledClass.DoTimetable))
+                    return false;//If not, we're missing a required class
+            }
+            return true;
+        }
+
+
         public List<List<ScheduledClass>> GenPermutations(IEnumerable<ClassInfo> classInfos, int maxClashes = 0)
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
-            
+
             numPredicted = PossiblePermutationsCount(classInfos);
             numGenerated = 0;
             generationMaxClashes = maxClashes;
@@ -57,6 +125,10 @@ namespace Timetabling
             var permutations = new List<List<ScheduledClass>>();
             foreach (var scheduledClass in classInfos[depth].ScheduledClasses)
             {
+                //Don't schedule ones we don't want to
+                if (!scheduledClass.DoTimetable)
+                    continue;
+
                 //If we have too many clashes, give up
                 if (numClashes(scheduledClass, slots) > generationMaxClashes)
                     continue;
@@ -66,7 +138,11 @@ namespace Timetabling
                 {
                     //If we're not, generate sub-permutations recursively
                     var depthPerms = genPermutations(classInfos, updateSlots(scheduledClass, slots), depth + 1);
-                    
+
+                    //Our permutation is no good, continue
+                    if (depthPerms == null)
+                        continue;
+
                     //Try and update our progress (flaky, could be improved)
                     ProgressUpdate?.Invoke((float)numGenerated / numPredicted);
 
@@ -84,6 +160,9 @@ namespace Timetabling
                 }
             }
 
+            if (!permutations.Any())
+                return null;
+
             //Return our new list
             return permutations;
         }
@@ -94,7 +173,7 @@ namespace Timetabling
 
             if (laterStarts)
             {
-                if(lessDays)
+                if (lessDays)
                     return timetables.OrderBy(t => t.NumberDaysClasses)
                         .ThenByDescending(t => t.AverageStartTime);
                 else
@@ -103,7 +182,7 @@ namespace Timetabling
             }
             else
             {
-                if(lessDays)
+                if (lessDays)
                     return timetables.OrderBy(t => t.NumberDaysClasses)
                         .ThenBy(t => t.AverageStartTime);
                 else
@@ -124,7 +203,7 @@ namespace Timetabling
                         .ThenBy(t => t.NumberDaysClasses)
                         .ThenByDescending(t => t.AverageStartTime);
                 else
-                    return timetables.OrderBy(t=>t.NumberClashes)
+                    return timetables.OrderBy(t => t.NumberClashes)
                         .ThenByDescending(t => t.NumberDaysClasses)
                         .ThenByDescending(t => t.AverageStartTime);
             }
@@ -135,7 +214,7 @@ namespace Timetabling
                         .ThenBy(t => t.NumberDaysClasses)
                         .ThenBy(t => t.AverageStartTime);
                 else
-                    return timetables.OrderBy(t=>t.NumberClashes)
+                    return timetables.OrderBy(t => t.NumberClashes)
                         .ThenByDescending(t => t.NumberDaysClasses)
                         .ThenBy(t => t.AverageStartTime);
 
@@ -167,6 +246,16 @@ namespace Timetabling
 
 
             return t;
+        }
+
+        private bool permutationValid(List<ScheduledClass> permutation, IEnumerable<ClassInfo> classInfos)
+        {
+            foreach (var classInfo in classInfos)
+            {
+                if (!permutation.Any(p => classInfo.ScheduledClasses.Contains(p)))
+                    return false;
+            }
+            return true;
         }
 
 

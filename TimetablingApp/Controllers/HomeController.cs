@@ -67,8 +67,6 @@ namespace TimetablingApp.Controllers
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
 
-            classInfos = filterClasses(classInfos, model.EarliestClassTime, model.LatestClassTime, model.Days);
-
             Generator g = new Generator();
             int possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
 
@@ -81,7 +79,7 @@ namespace TimetablingApp.Controllers
 
             int maxClashes = 0;
 
-            while(!lastTimetables.Any())
+            /*while(!lastTimetables.Any())
             {
                 try
                 {
@@ -108,7 +106,9 @@ namespace TimetablingApp.Controllers
 
 
                 maxClashes++;
-            }
+            }*/
+
+            lastTimetables = g.GeneratePermutationsExpanding(classInfos);
 
             generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}.", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : ""));
             return Json(new TimetableBuildResultModel(lastTimetables[0], lastTimetables.Count,"success"));
@@ -148,10 +148,10 @@ namespace TimetablingApp.Controllers
         }
 
         [HttpPost("/Home/UpdateSelectedSubjects")]
-        public async void UpdateSelectedSubjects([FromBody]List<string> subjectCodes)
+        public async Task<IActionResult> UpdateSelectedSubjects([FromBody]TimetableOptionsModel model)
         {
             List<Subject> subjects = new List<Subject>();
-            foreach (var subjectCode in subjectCodes)
+            foreach (var subjectCode in model.SubjectCodes)
             {
                 Subject subject = subjectList.FirstOrDefault(s => s.Code == subjectCode);
 
@@ -164,12 +164,14 @@ namespace TimetablingApp.Controllers
                 subjects.Add(subject);
             }
 
-            int numPermutations = Generator.PossiblePermutationsCount(subjects.SelectMany(s => s.Classes));
+            IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
+
+            int numPermutations = Generator.PossiblePermutationsCount(classInfos);
             
             if(numPermutations > 1)
-                subjectInfoUpdate(string.Format("{0:n0} possible timetables.", numPermutations));
+                return Json(string.Format("{0:n0} possible timetables.", numPermutations));
             else
-                subjectInfoUpdate("");
+                return Json("No possible timetables under these filters.");
         }
 
         private IEnumerable<ClassInfo> filterClasses(IEnumerable<ClassInfo> classes, string earliestTimeString, string latestTimeStrng, string daysString)
