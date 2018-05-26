@@ -24,12 +24,15 @@ namespace Timetabling
             //Time in hours from the preferred time we will try to schedule within
             int period = 0;
 
+            //Allow for expanding beyond what is necessary to get better results
+            int forceMore = 0;
+
             List<ScheduledClass> classes = classInfos.SelectMany(ci => ci.ScheduledClasses).ToList();
             classes.ForEach(c => c.DoTimetable = false);
             List<Timetable> timetables = new List<Timetable>();
 
-            int numAllowedClashes = 0;
-            while (!timetables.Any() || !classesValid(classInfos))
+            int maxClashes = 0;
+            while (!timetables.Any() || !classesValid(classInfos) || (timetables.Count < 25000 && forceMore++ < 2))
             {
                 period += 4;//Take an hour
 
@@ -59,15 +62,19 @@ namespace Timetabling
                     continue;
 
                 var slots = new byte[24 * 4 * 5];
-                var permutations = genPermutations(classInfos.ToList(), slots, numAllowedClashes);
+                var permutations = genPermutations(classInfos.ToList(), slots, 0);
 
                 if (permutations == null)
                     continue;
 
                 permutations = permutations.Where(p => permutationValid(p, classInfos)).ToList();
 
-                timetables = permutations.Select(analysePermutation).ToList();
-                numAllowedClashes++;
+                if (maxClashes == 0)
+                    timetables = sortPermutations(permutations).ToList();
+                else
+                    timetables = sortClashedPermutations(permutations).ToList();
+
+                maxClashes++;
             }
 
             return timetables;

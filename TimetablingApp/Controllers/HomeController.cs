@@ -67,7 +67,7 @@ namespace TimetablingApp.Controllers
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.Classes);
 
-            Generator g = new Generator();
+            Generator g = new Generator { SortLaterStarts = model.LaterStarts, SortLessDays = model.LessDays };
             long possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
 
             if (possiblePermutations == 0)
@@ -77,8 +77,8 @@ namespace TimetablingApp.Controllers
 
             generatorStatusUpdate("Generating timetables...");
 
-            //Check what algorithm to use, if we have over 50M permutations use the expanding algorithm
-            if (possiblePermutations > 50 * 1000 * 1000)
+            //Check what algorithm to use, if we have over 5M permutations use the expanding algorithm
+            if (possiblePermutations > 5 * 1000 * 1000)
                 lastTimetables = g.GeneratePermutationsExpanding(classInfos);
             else
                 lastTimetables = g.GenerateTimetablesBruteForce(classInfos);
