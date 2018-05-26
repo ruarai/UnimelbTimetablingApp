@@ -75,40 +75,13 @@ namespace TimetablingApp.Controllers
 
             g.ProgressUpdate += generatorProgressUpdate;
 
-            lastTimetables = new List<Timetable>();
+            generatorStatusUpdate("Generating timetables...");
 
-            int maxClashes = 0;
-
-            /*while(!lastTimetables.Any())
-            {
-                try
-                {
-                    if (maxClashes == 0)
-                    {
-                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : ""));
-                        var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
-                        generatorStatusUpdate("Sorting timetables...");
-                        lastTimetables = g.SortPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
-                    }
-                    else
-                    {
-                        generatorStatusUpdate(string.Format("Generating up to {0:n0} timetable{1}...", possiblePermutations, possiblePermutations > 1 ? "s" : ""));
-                        var permutations = g.GenPermutations(classInfos.ToList(), maxClashes);
-                        generatorStatusUpdate("Sorting timetables...");
-                        lastTimetables = g.SortClashedPermutations(permutations, model.LaterStarts, model.LessDays).ToList();
-                    }
-                }
-                catch (InsufficientMemoryException)
-                {
-                    return Json(new TimetableBuildResultModel(null, 0, "failure", "Timetables could not be generated as the generator ran out of memory. " +
-                                                                                  "Try adding additional filtering to reduce the number of possible timetables."));
-                }
-
-
-                maxClashes++;
-            }*/
-
-            lastTimetables = g.GeneratePermutationsExpanding(classInfos);
+            //Check what algorithm to use, if we have over 50M permutations use the expanding algorithm
+            if (possiblePermutations > 50 * 1000 * 1000)
+                lastTimetables = g.GeneratePermutationsExpanding(classInfos);
+            else
+                lastTimetables = g.GenerateTimetablesBruteForce(classInfos);
 
             generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}.", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : ""));
             return Json(new TimetableBuildResultModel(lastTimetables[0], lastTimetables.Count,"success"));

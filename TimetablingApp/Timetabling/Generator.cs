@@ -14,6 +14,9 @@ namespace Timetabling
     {
         public event ProgressEvent ProgressUpdate;
 
+        public bool SortLaterStarts { get; set; }
+        public bool SortLessDays { get; set; }
+
         public List<Timetable> GeneratePermutationsExpanding(IEnumerable<ClassInfo> classInfos)
         {
             //preferred class time we will expand from
@@ -70,6 +73,34 @@ namespace Timetabling
             return timetables;
         }
 
+        public List<Timetable> GenerateTimetablesBruteForce(IEnumerable<ClassInfo> classInfos)
+        {
+            List<Timetable> timetables = new List<Timetable>();
+
+            classInfos.SelectMany(ci => ci.ScheduledClasses).ToList().ForEach(c => c.DoTimetable = true);
+
+            while (!timetables.Any())
+            {
+                int maxClashes = 0;
+                if (maxClashes == 0)
+                {
+                    var permutations = genPermutations(classInfos.ToList(), maxClashes);
+                    if(permutations != null)
+                        timetables = sortPermutations(permutations).ToList();
+                }
+                else
+                {
+                    var permutations = genPermutations(classInfos.ToList(), maxClashes);
+                    if (permutations != null)
+                        timetables = sortClashedPermutations(permutations).ToList();
+                }
+
+                maxClashes++;
+            }
+
+            return timetables;
+        }
+
         private bool classesValid(IEnumerable<ClassInfo> classInfos)
         {
             //For every classInfo,
@@ -82,7 +113,7 @@ namespace Timetabling
         }
 
 
-        public List<List<ScheduledClass>> GenPermutations(IEnumerable<ClassInfo> classInfos, int maxClashes = 0)
+        private List<List<ScheduledClass>> genPermutations(IEnumerable<ClassInfo> classInfos, int maxClashes = 0)
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
 
@@ -167,13 +198,13 @@ namespace Timetabling
             return permutations;
         }
 
-        public IEnumerable<Timetable> SortPermutations(IEnumerable<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
+        private IEnumerable<Timetable> sortPermutations(IEnumerable<List<ScheduledClass>> permutations)
         {
             var timetables = permutations.Select(analysePermutation);
 
-            if (laterStarts)
+            if (SortLaterStarts)
             {
-                if (lessDays)
+                if (SortLessDays)
                     return timetables.OrderBy(t => t.NumberDaysClasses)
                         .ThenByDescending(t => t.AverageStartTime);
                 else
@@ -182,7 +213,7 @@ namespace Timetabling
             }
             else
             {
-                if (lessDays)
+                if (SortLessDays)
                     return timetables.OrderBy(t => t.NumberDaysClasses)
                         .ThenBy(t => t.AverageStartTime);
                 else
@@ -192,13 +223,13 @@ namespace Timetabling
             }
         }
 
-        public IEnumerable<Timetable> SortClashedPermutations(IEnumerable<List<ScheduledClass>> permutations, bool laterStarts, bool lessDays)
+        private IEnumerable<Timetable> sortClashedPermutations(IEnumerable<List<ScheduledClass>> permutations)
         {
             var timetables = permutations.Select(analysePermutation);
 
-            if (laterStarts)
+            if (SortLaterStarts)
             {
-                if (lessDays)
+                if (SortLessDays)
                     return timetables.OrderBy(t => t.NumberClashes)
                         .ThenBy(t => t.NumberDaysClasses)
                         .ThenByDescending(t => t.AverageStartTime);
@@ -209,7 +240,7 @@ namespace Timetabling
             }
             else
             {
-                if (lessDays)
+                if (SortLessDays)
                     return timetables.OrderBy(t => t.NumberClashes)
                         .ThenBy(t => t.NumberDaysClasses)
                         .ThenBy(t => t.AverageStartTime);
