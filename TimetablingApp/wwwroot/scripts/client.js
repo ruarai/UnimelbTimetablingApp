@@ -55,20 +55,24 @@
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
         
+        var subjectCodes = getSubjectCodes();
+
         setStatus('Starting...');
 
         $('#timetable').fullCalendar('removeEvents');
-        
-        var laterStarts = $('#laterStartsCheckbox').is(':checked');
-        var lessDays = $('#lessDaysCheckbox').is(':checked');
 
-        var url = '/Home/BuildTimetable?subjectCodes=' + getSubjectCodes().join() + '&laterStarts' + laterStarts + '&lessDays' + lessDays;
+        var model = {
+            subjectCodes: subjectCodes,
+            laterStarts: $('#laterStartsCheckbox').is(':checked'),
+            lessDays: $('#lessDaysCheckbox').is(':checked')
+        };
 
         $.ajax({
-            url: url,
+            url: '/Home/BuildTimetable',
             dataType: 'json',
-            type: 'GET',
+            type: 'POST',
             contentType: 'application/json',
+            data: JSON.stringify(model),
             async: true,
             success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
@@ -138,12 +142,17 @@
         //disable calculation whilst this happens, otherwise weird stuff can happen with timetable retrieval internally
         $("#calculateButton").attr('disabled', true);
         
+        //all filtering/subject info
+        var model = {
+            subjectCodes: getSubjectCodes()
+        };
 
         $.ajax({
-            url: '/Home/UpdateSelectedSubjects?subjectCodes=' + getSubjectCodes().join('|'),
+            url: '/Home/UpdateSelectedSubjects',
             dataType: 'json',
-            type: 'GET',
+            type: 'POST',
             contentType: 'application/json',
+            data: JSON.stringify(model),
             success: function (numPermutations) {
                 $("#subjectInfo").empty();
 
