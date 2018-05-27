@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.SignalR;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 
@@ -19,7 +18,6 @@ namespace TimetablingApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -29,11 +27,7 @@ namespace TimetablingApp
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<UIHub>("/ui");
-            });
+            
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

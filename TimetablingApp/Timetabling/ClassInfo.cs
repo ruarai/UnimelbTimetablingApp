@@ -12,5 +12,9 @@ namespace Timetabling
         public Subject ParentSubject { get; set; }
 
         public string ClassType { get; set; }
+
+        public string ClassDescription => ClassName.Split(" ")[0];//eg, Lecture, Tutorial
+
+        public int ID { get; set; }
     }
 }

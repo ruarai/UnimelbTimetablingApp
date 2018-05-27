@@ -25,39 +25,28 @@
     });
 
 
-    var previousTimetableRequest = null;
-    var previousTimetableRequestTime = new Date().getTime();
+    var previousSlideTime = new Date().getTime();
     $("#slider").slider({
         slide: function (event, ui) {
+            if (previousSlideTime + 50 > new Date().getTime())
+                return;
+            previousSlideTime = new Date().getTime();
+
             var index = ui.value;
 
-            if (previousTimetableRequestTime + 50 < new Date().getTime()) {
-                previousTimetableRequestTime = new Date().getTime();
-
-                previousTimetableRequest = $.ajax({
-                    url: 'Home/GetTimetable?index=' + index,
-                    dataType: 'json',
-                    type: 'GET',
-                    beforeSend: function () {
-                        if (previousTimetableRequest !== null)
-                            previousTimetableRequest.abort();
-                    },
-                    success: function (timetable) {
-                        $('#timetable').fullCalendar('removeEvents');
-                        renderTimetable(timetable);
-                    }
-                });
-            }
+            renderTimetable(timetables[index]);
         }
     });
 
+    var classInfos = [];
+    var timetables = [];
 
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
         
         var subjectCodes = getSubjectCodes();
 
-        setStatus('Starting...');
+        setStatus('Generating timetables...');
 
         $('#timetable').fullCalendar('removeEvents');
 
@@ -77,14 +66,14 @@
             success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
 
-                if (timetableModel.resultStatus === 'failure') {
-                    setStatus(timetableModel.resultMessage);
-                    return;
-                }
+                setStatus('Generated ' + timetableModel.timetables.length.toLocaleString() + ' timetables.');
 
-                renderTimetable(timetableModel.topTimetable);
+                classInfos = timetableModel.originalClassInfos;
+                timetables = timetableModel.timetables;
 
-                $("#slider").slider("option", "max", timetableModel.numberTimetables - 1);
+                renderTimetable(timetableModel.timetables[0]);
+
+                $("#slider").slider("option", "max", timetableModel.timetables.length - 1);
             },
             error: function () {
                 $("#calculateButton").attr('disabled', false);
@@ -93,23 +82,7 @@
         });
     });
    
-
-    let connection = new signalR.HubConnectionBuilder()
-        .withUrl("/ui")
-        .build();
-
-    connection.onClosed = e => {
-        console.log('connection to ui lost');
-    };
     
-    connection.on('status', (message) => {
-        setStatus(message);
-    });
-    connection.start().catch(err => {
-        console.log('connection error');
-        console.log(err);
-    });
-
     var buildSubjectListing = function (subjectName) {
         var div = $('<div>' + subjectName + '</div>');
 
@@ -190,22 +163,27 @@
     }
 
     var renderTimetable = function (timetable) {
-        $("#timetable").fullCalendar('gotoDate', timetable.classes[0].timeStart);
+        $("#timetable").fullCalendar('removeEvents');
 
-        timetable.classes.forEach(function (scheduledClass) {
+        timetable.classes.forEach(function (compressedClass) {
+            classInfo = classInfos.find(function (element) {
+                return element.id === compressedClass.id;
+            });
 
-            var classLabel = scheduledClass.parentSubject.displayName + '\n' +
-                scheduledClass.className;
+            $("#timetable").fullCalendar('gotoDate', compressedClass.start);
 
-            var color = string_to_color(scheduledClass.parentSubject.shortCode);
-            var borderColor = string_to_color(scheduledClass.classDescription);
+            var classLabel = classInfo.parentSubject.displayName + '\n' +
+                classInfo.className;
 
-            color = shade(color, (scheduledClass.parentSubject.codeShortDigits % 4 - 2) * 16);
+            var color = string_to_color(classInfo.parentSubject.shortCode);
+            var borderColor = string_to_color(classInfo.classDescription);
+
+            //color = shade(color, (scheduledClass.subjectShortCodeDigits % 4 - 2) * 16);
 
             
             event = {
-                start: scheduledClass.timeStart,
-                end: scheduledClass.timeEnd,
+                start: compressedClass.start,
+                end: compressedClass.end,
                 title: classLabel,
                 backgroundColor: '#' + color,
                 borderColor: '#' + borderColor,

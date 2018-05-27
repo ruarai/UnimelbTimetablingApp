@@ -1,21 +1,16 @@
-﻿
-
+﻿using System.Collections.Generic;
 using Timetabling;
 
 namespace TimetablingApp.Models
 {
     public class TimetableBuildResultModel
     {
-        public TimetableBuildResultModel(Timetable topTimetable,int numberTimetables, string status,string message = "")
+        public TimetableBuildResultModel(List<CompressedTimetable> timetables, List<ClassInfo> originalClassInfos)
         {
-            TopTimetable = topTimetable;
-            NumberTimetables = numberTimetables;
-            ResultStatus = status;
-            ResultMessage = message;
+            Timetables = timetables;
+            OriginalClassInfos = originalClassInfos;
         }
-        public Timetable TopTimetable { get; set; }
-        public int NumberTimetables { get; set; }
-        public string ResultStatus { get; set; }
-        public string ResultMessage { get; set; }
+        public List<CompressedTimetable> Timetables { get; set; }
+        public List<ClassInfo> OriginalClassInfos { get; set; }
     }
 }

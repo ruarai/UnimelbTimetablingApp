@@ -11,11 +11,16 @@ namespace Timetabling
             TimeStart = timeStart;
             TimeEnd = timeEnd;
         }
-        
+
+        [JsonIgnore]
         public Subject ParentSubject => ClassInfo.ParentSubject;
         public string ClassName => ClassInfo.ClassName;
         public string ClassDescription => ClassInfo.ClassName.Split(" ")[0];//eg, Lecture, Tutorial
 
+        public string subjectDisplayName => ParentSubject.DisplayName;
+        public string subjectShortCode => ParentSubject.ShortCode;
+
+        [JsonIgnore]
         public ClassInfo ClassInfo { get; set; }
 
         [JsonIgnore]
@@ -37,6 +42,7 @@ namespace Timetabling
         [JsonIgnore]
         public bool DoTimetable { get; set; } = false;
 
+        [JsonIgnore]
         public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
         //Classes that are of the same number, e.g. stream lectures
         //These classes are dependent entirely upon the scheduling of this class.

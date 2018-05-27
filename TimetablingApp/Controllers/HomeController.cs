@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using Timetabling;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SignalR;
 using ElectronNET.API;
 using TimetablingApp.Models;
 using System.Threading;
@@ -33,12 +32,9 @@ namespace TimetablingApp.Controllers
             }
         }
 
-        private static List<Timetable> lastTimetables = null;
-
-        public HomeController(IHostingEnvironment environment, IHubContext<UIHub> hubContext)
+        public HomeController(IHostingEnvironment environment)
         {
             _hostingEnvironment = environment;
-            _uiHub = hubContext;
         }
 
         public IActionResult Index()
@@ -49,8 +45,6 @@ namespace TimetablingApp.Controllers
         [HttpPost("/Home/BuildTimetable")]
         public async Task<IActionResult> BuildTimetable([FromBody] TimetableOptionsModel model)
         {
-            generatorStatusUpdate("Fetching timetables from online...");
-
             List<Subject> subjects = new List<Subject>();
             foreach(var subjectCode in model.SubjectCodes)
             {
@@ -66,39 +60,26 @@ namespace TimetablingApp.Controllers
             }
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
+            IEnumerable<ClassInfo> originalClassInfos = subjects.SelectMany(subject => subject.OriginalClassInfos);
+
+            int id = 0;
+            foreach(var classInfo in originalClassInfos)
+                classInfo.ID = id++;
 
             Generator g = new Generator { SortLaterStarts = model.LaterStarts, SortLessDays = model.LessDays };
             long possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
 
-            if (possiblePermutations == 0)
-                return Json(new TimetableBuildResultModel(null, 0, "failure", "No classes can be scheduled within your filtered time."));
-
-            generatorStatusUpdate("Generating timetables...");
-
+            List<Timetable> timetables = new List<Timetable>();
+            
             //Check what algorithm to use, if we have over 5M permutations use the expanding algorithm
             if (possiblePermutations > 5 * 1000 * 1000)
-                lastTimetables = g.GeneratePermutationsExpanding(classInfos);
+                timetables = g.GeneratePermutationsExpanding(classInfos);
             else
-                lastTimetables = g.GenerateTimetablesBruteForce(classInfos);
+                timetables = g.GenerateTimetablesBruteForce(classInfos);
 
-            generatorStatusUpdate(string.Format("Generated {0:n0} timetable{1}.", lastTimetables.Count, lastTimetables.Count > 1 ? "s" : ""));
-            return Json(new TimetableBuildResultModel(lastTimetables[0], lastTimetables.Count,"success"));
-        }
-
-        public IActionResult GetTimetable(int index)
-        {
-            return Json(lastTimetables[index]);
-        }
-
-        private readonly IHubContext<UIHub> _uiHub;
-
-        private void generatorStatusUpdate(string newStatus)
-        {
-            _uiHub.Clients.All.SendAsync("status", newStatus);
-        }
-        private void subjectInfoUpdate(string subjectInfo)
-        {
-            _uiHub.Clients.All.SendAsync("subjectInfo", subjectInfo);
+            var compressedTimetables = timetables.Select(t => new CompressedTimetable(t)).Take(25000).ToList();
+                
+            return Json(new TimetableBuildResultModel(compressedTimetables, originalClassInfos.ToList()));
         }
 
 

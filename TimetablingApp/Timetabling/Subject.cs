@@ -21,6 +21,9 @@ namespace Timetabling
         public List<ClassInfo> ClassInfos { get; set; }
 
         [JsonIgnore]
+        public List<ClassInfo> OriginalClassInfos { get; set; }
+
+        [JsonIgnore]
         public IEnumerable<ScheduledClass> AllClasses { get
             {
                 var childClasses = ClassInfos.SelectMany(classInfo => classInfo.ScheduledClasses).SelectMany(sc => sc.ChildClasses);
@@ -105,6 +108,9 @@ namespace Timetabling
                 catch (Exception)//Sadly can't trust timetable to be in correct format
                 {   }
             }
+
+            //Make a copy of the originals to be used in rendering
+            OriginalClassInfos = new List<ClassInfo>(ClassInfos);
 
             consolidateClasses();
 
