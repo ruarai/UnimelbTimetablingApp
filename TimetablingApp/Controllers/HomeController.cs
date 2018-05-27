@@ -77,7 +77,7 @@ namespace TimetablingApp.Controllers
             else
                 timetables = g.GenerateTimetablesBruteForce(classInfos);
 
-            var compressedTimetables = timetables.Select(t => new CompressedTimetable(t)).Take(25000).ToList();
+            var compressedTimetables = timetables.Select(t => new CompressedTimetable(t)).Take(2500).ToList();
                 
             return Json(new TimetableBuildResultModel(compressedTimetables, originalClassInfos.ToList()));
         }
