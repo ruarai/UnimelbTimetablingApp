@@ -54,25 +54,21 @@
 
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
-
-        var subjectCodes = getSubjectCodes();
-
+        
         setStatus('Starting...');
 
         $('#timetable').fullCalendar('removeEvents');
+        
+        var laterStarts = $('#laterStartsCheckbox').is(':checked');
+        var lessDays = $('#lessDaysCheckbox').is(':checked');
 
-        var model = {
-            subjectCodes: subjectCodes,
-            laterStarts: $('#laterStartsCheckbox').is(':checked'),
-            lessDays: $('#lessDaysCheckbox').is(':checked')
-        };
+        var url = '/Home/BuildTimetable?subjectCodes=' + getSubjectCodes().join() + '&laterStarts' + laterStarts + '&lessDays' + lessDays;
 
         $.ajax({
-            url: '/Home/BuildTimetable',
+            url: url,
             dataType: 'json',
-            type: 'POST',
+            type: 'GET',
             contentType: 'application/json',
-            data: JSON.stringify(model),
             async: true,
             success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
@@ -141,19 +137,13 @@
     var updateSubjectInfo = function () {
         //disable calculation whilst this happens, otherwise weird stuff can happen with timetable retrieval internally
         $("#calculateButton").attr('disabled', true);
-
-
-        //all filtering/subject info
-        var model = {
-            subjectCodes: getSubjectCodes()
-        };
+        
 
         $.ajax({
-            url: '/Home/UpdateSelectedSubjects',
+            url: '/Home/UpdateSelectedSubjects?subjectCodes=' + getSubjectCodes().join('|'),
             dataType: 'json',
-            type: 'POST',
+            type: 'GET',
             contentType: 'application/json',
-            data: JSON.stringify(model),
             success: function (numPermutations) {
                 $("#subjectInfo").empty();
 
@@ -198,29 +188,23 @@
             var classLabel = scheduledClass.parentSubject.displayName + '\n' +
                 scheduledClass.className;
 
+            var color = string_to_color(scheduledClass.parentSubject.shortCode);
+            var borderColor = string_to_color(scheduledClass.classDescription);
+
+            color = shade(color, (scheduledClass.parentSubject.codeShortDigits % 4 - 2) * 16);
+
+            
             event = {
                 start: scheduledClass.timeStart,
                 end: scheduledClass.timeEnd,
                 title: classLabel,
-                backgroundColor: stringToColour(scheduledClass.parentSubject.code),
-                borderColor: stringToColour(scheduledClass.classDescription),
-                textColor: invertColor(scheduledClass.parentSubject.code)
+                backgroundColor: '#' + color,
+                borderColor: '#' + borderColor,
+                textColor: invertColor(color)
             };
 
             $("#timetable").fullCalendar('renderEvent', event);
         });
-    };
-    var stringToColour = function (str) {
-        var hash = 0;
-        for (var i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        var colour = '#';
-        for (var i = 0; i < 3; i++) {
-            var value = (hash >> (i * 8)) & 0xFF;
-            colour += ('00' + value.toString(16)).substr(-2);
-        }
-        return colour;
     };
 
     function invertColor(hex) {
@@ -232,7 +216,24 @@
             g = parseInt(hex.slice(2, 4), 16),
             b = parseInt(hex.slice(4, 6), 16);
         // http://stackoverflow.com/a/3943023/112731
-        return r * 0.299 + g * 0.587 + b * 0.114 > 186 ? '#000000' : '#FFFFFF';
+        return r * 0.299 + g * 0.587 + b * 0.114 > 200 ? '#000000' : '#FFFFFF';
     }
+
+
+    // Change the darkness or lightness
+    var shade = function (color, prc) {
+        var num = parseInt(color, 16),
+            amt = Math.round(2.55 * prc),
+            R = (num >> 16) + amt,
+            G = (num >> 8 & 0x00FF) + amt,
+            B = (num & 0x0000FF) + amt;
+        return (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255))
+            .toString(16)
+            .slice(1);
+    };
+
+
 });
 
