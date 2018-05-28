@@ -83,9 +83,9 @@ namespace Timetabling
 
             classInfos.SelectMany(ci => ci.ScheduledClasses).ToList().ForEach(c => c.DoTimetable = true);
 
+            int maxClashes = 0;
             while (!timetables.Any())
             {
-                int maxClashes = 0;
                 if (maxClashes == 0)
                 {
                     var permutations = genPermutations(classInfos.ToList(), maxClashes);
