@@ -28,10 +28,19 @@ namespace Timetabling
             classes.ForEach(c => c.DoTimetable = false);
             List<Timetable> timetables = new List<Timetable>();
 
-            int maxClashes = 0;
+            generationMaxClashes = 0;
             while (!timetables.Any() || !classesValid(classInfos) || (timetables.Count < 25000 && forceMore++ < 2))
             {
                 period += 4;//Take an hour
+
+                if(period > 24 * 4 - preferredTime)
+                {
+                    period = 4;
+                    generationMaxClashes++;
+                }
+
+                if (generationMaxClashes > 4)
+                    break;
 
                 //array of days we'll try to schedule on
                 bool[] days = new bool[] { true, true, true, true, true };
@@ -66,12 +75,10 @@ namespace Timetabling
 
                 permutations = permutations.Where(p => permutationValid(p, classInfos)).ToList();
 
-                if (maxClashes == 0)
+                if (generationMaxClashes == 0)
                     timetables = sortPermutations(permutations).ToList();
                 else
                     timetables = sortClashedPermutations(permutations).ToList();
-
-                maxClashes++;
             }
 
             return timetables;
@@ -83,23 +90,23 @@ namespace Timetabling
 
             classInfos.SelectMany(ci => ci.ScheduledClasses).ToList().ForEach(c => c.DoTimetable = true);
 
-            int maxClashes = 0;
+            generationMaxClashes = 0;
             while (!timetables.Any())
             {
-                if (maxClashes == 0)
+                if (generationMaxClashes == 0)
                 {
-                    var permutations = genPermutations(classInfos.ToList(), maxClashes);
+                    var permutations = generateBruteForce(classInfos.ToList());
                     if(permutations != null)
                         timetables = sortPermutations(permutations).ToList();
                 }
                 else
                 {
-                    var permutations = genPermutations(classInfos.ToList(), maxClashes);
+                    var permutations = generateBruteForce(classInfos.ToList());
                     if (permutations != null)
                         timetables = sortClashedPermutations(permutations).ToList();
                 }
 
-                maxClashes++;
+                generationMaxClashes++;
             }
 
             return timetables;
@@ -117,13 +124,12 @@ namespace Timetabling
         }
 
 
-        private List<List<ScheduledClass>> genPermutations(IEnumerable<ClassInfo> classInfos, int maxClashes = 0)
+        private List<List<ScheduledClass>> generateBruteForce(IEnumerable<ClassInfo> classInfos)
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
 
             numPredicted = PossiblePermutationsCount(classInfos);
             numGenerated = 0;
-            generationMaxClashes = maxClashes;
 
             //Order classes so that we start from least number of possible choices to most
             //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
