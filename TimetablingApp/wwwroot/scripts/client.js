@@ -21,7 +21,8 @@
         maxTime: '23:00:00',
         header: false,
         allDaySlot: false,
-        displayEventTime: false
+        displayEventTime: false,
+        contentHeight: 'auto'
     });
 
 

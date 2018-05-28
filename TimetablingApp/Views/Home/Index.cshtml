@@ -9,10 +9,10 @@
     <title>Unimelb Timetabling App</title>
     <meta charset="utf-8" />
 
-    <link href="~/css/style.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/css/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/css/awesomplete.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/css/fullcalendar.min.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/css/style.css" rel="stylesheet" type="text/css" media="all" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat|PT+Sans" rel="stylesheet">
 
     <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
@@ -36,63 +36,71 @@
     <script src="~/scripts/client.js"></script>
 </head>
 <body>
-    <div id="left">
-        <div class="border borderhigh">
-            <div class="content contenttop">
-                <div class="label">
-                    1. Subject search:
+    <div id="columnContainer">
+        <div id="left">
+            <div class="border borderhigh">
+                <div class="content contenttop">
+                    <div class="header">University of Melbourne Timetable Generator</div>
                 </div>
-                <div>
-                    <label for="subjectSearch">Subject:</label>
-                    <input id="subjectSearch" />
+                <div class="content contenttop">
+                    <div class="label">
+                        1. Subject search:
+                    </div>
+                    <div>
+                        <label for="subjectSearch">Subject:</label>
+                        <input id="subjectSearch" />
+                    </div>
+                    <hr />
+                    <div id="subjectList">
+                    </div>
                 </div>
-                <hr />
-                <div id="subjectList">
+                <div class="content contenttop">
+                    <div class="label">
+                        2. Sorting:
+                    </div>
+                    <div class="sortOption">
+                        <label for="laterStartsCheckbox">Prefer later starts:</label>
+                        <input class="sortCheckbox" id="laterStartsCheckbox" type="checkbox" checked="checked" />
+                    </div>
+                    <div class="sortOption">
+                        <label for="lessDaysCheckbox">Prefer less days:</label>
+                        <input class="sortCheckbox" id="lessDaysCheckbox" type="checkbox" checked="checked" />
+                    </div>
                 </div>
-            </div>
-            <div class="content contenttop">
-                <div class="label">
-                    2. Sorting:
+                <div class="content contenttop">
+                    <div class="label">
+                        3. Generation:
+                    </div>
+                    <button id="calculateButton" disabled="true">Generate</button>
+                    <div id="subjectInfo">
+                        Select some subjects to begin.
+                    </div>
                 </div>
-                <div class="sortOption">
-                    <label for="laterStartsCheckbox">Prefer later starts:</label>
-                    <input class="sortCheckbox" id="laterStartsCheckbox" type="checkbox" checked="checked" />
+                <div class="content">
+                    <div class="label">
+                        4. Selection:
+                    </div>
+                    <div>
+                        Slide to select your timetable:
+                    </div>
+                    <div id="slider"></div>
+                    <div id="timetablesInfo"></div>
                 </div>
-                <div class="sortOption">
-                    <label for="lessDaysCheckbox">Prefer less days:</label>
-                    <input class="sortCheckbox" id="lessDaysCheckbox" type="checkbox" checked="checked" />
-                </div>
-            </div>
-            <div class="content contenttop">
-                <div class="label">
-                    3. Generation:
-                </div>
-                <button id="calculateButton" disabled="true">Generate</button>
-                <div id="subjectInfo">
-                    Select some subjects to begin.
-                </div>
-            </div>
-            <div class="content">
-                <div class="label">
-                    4. Selection:
-                </div>
-                <div>
-                    Slide to select your timetable:
-                </div>
-                <div id="slider"></div>
-                <div id="timetablesInfo"></div>
             </div>
         </div>
-    </div>
-    <div id="right">
-        <div class="border borderlow">
-            <div class="content">
-                <div id="timetable">
+        <div id="right">
+            <div class="border borderlow">
+                <div class="content">
+                    <div id="timetable">
 
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="clear"></div>
+    <div class="footer">
+        Made by <a href="http://ruar.ai">ruarai</a>.
+        Source available on <a href="https://github.com/ruarai/unimelb-timetable-net">GitHub</a>
+    </div>
 </body>
 </html>

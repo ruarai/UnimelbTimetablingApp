@@ -1,5 +1,31 @@
 ﻿body {
     font-family: 'PT Sans', sans-serif;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    margin:0;
+}
+
+#columnContainer {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    height: 80%;
+    margin:8px;
+}
+
+#left, #right {
+    flex: 1 300px;
+                     
+    min-width: 0;
+}
+
+#left{
+    max-width:300px;
+}
+
+#right{
+    max-height:1024px;
 }
 
 .borderlow {
@@ -24,18 +50,14 @@
     margin-bottom: 6px;
 }
 
+.contentspacer {
+    height:100px;
+}
+
 .timeInput{
     float:right;
 }
 
-#left {
-    width: 300px;
-    float: left;
-}
-
-#right {
-    margin-left: 300px;
-}
 
 #subjectList{
     height:250px;
@@ -57,11 +79,23 @@
     padding-top:4px;
 }
 
+.footer{
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.header {
+    margin: 0;
+    font-style: italic;
+    font-size: 1.2em;
+    text-align: center;
+    font-family: Montserrat,sans-serif;
+}
+
 .label {
     padding-bottom: 6px;
     text-decoration: underline;
     font-family: Montserrat,sans-serif;
-    font-weight: 600;
     font-size: 1.1em;
     display: inline-block;
 }
@@ -148,4 +182,21 @@ hr {
 
 #timetable{
     font-size:0.9em;
+}
+
+
+.awesomplete mark {
+    background: hsl(182, 51%, 78%);
+}
+.awesomplete li:hover mark {
+    background: hsl(182, 100%, 41%);
+}
+
+.awesomplete li[aria-selected="true"] mark {
+    background: hsl(182, 100%, 21%);
+    color: inherit;
+}
+
+.fc-unthemed td.fc-today{
+    background-color:white;
 }
