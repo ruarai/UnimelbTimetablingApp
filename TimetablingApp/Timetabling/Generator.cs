@@ -14,6 +14,8 @@ namespace Timetabling
         public bool SortLaterStarts { get; set; }
         public bool SortLessDays { get; set; }
 
+        public CancellationToken CancellationToken { get; set; }
+
         public List<Timetable> GeneratePermutationsExpanding(IEnumerable<ClassInfo> classInfos)
         {
             //preferred class time we will expand from
@@ -29,11 +31,11 @@ namespace Timetabling
             List<Timetable> timetables = new List<Timetable>();
 
             generationMaxClashes = 0;
-            while (!timetables.Any() || !classesValid(classInfos) || (timetables.Count < 25000 && forceMore++ < 2))
+            while (!timetables.Any() || !classesValid(classInfos) || (timetables.Count < 25000 && forceMore++ < 1))
             {
                 period += 4;//Take an hour
 
-                if(period > 24 * 4 - preferredTime)
+                if (period > 24 * 4 - preferredTime)
                 {
                     period = 4;
                     generationMaxClashes++;
@@ -42,27 +44,23 @@ namespace Timetabling
                 if (generationMaxClashes > 4)
                     break;
 
-                //array of days we'll try to schedule on
-                bool[] days = new bool[] { true, true, true, true, true };
-
                 bool[] allowedSlots = new bool[24 * 4 * 5];//15 min slots over the 5 day class period
                 for (int day = 0; day < 5; day++)
                 {
                     //Calculate the first slot of the day
                     int daySlot = day * 24 * 4;
 
-                    //Check iff we want to schedule on this day
-                    if (days[day])
-                    {
-                        //Starting from our preferred time, set our desired periods to true
-                        for (int quarters = preferredTime; quarters < preferredTime + period; quarters++)
-                            allowedSlots[daySlot + quarters] = true;
-
-                    }
+                    //Starting from our preferred time, set our desired periods to true
+                    for (int quarters = preferredTime; quarters < preferredTime + period; quarters++)
+                        allowedSlots[daySlot + quarters] = true;
                 }
 
-                //Make sure each class is only timetabled if it is within our new period
-                classes.ForEach(c => c.DoTimetable = (allowedSlots[c.SlotStart] && allowedSlots[c.SlotEnd]));
+                //Make sure each class is only timetabled if it is within our new period, or if there is no actual choice for this class (1 option)
+                foreach (var c in classes)
+                {
+                    c.DoTimetable = (allowedSlots[c.SlotStart] && allowedSlots[c.SlotEnd])
+                                  || c.ClassInfo.ScheduledClasses.Count == 1;
+                }
 
                 if (!classesValid(classInfos))
                     continue;
@@ -96,7 +94,7 @@ namespace Timetabling
                 if (generationMaxClashes == 0)
                 {
                     var permutations = generateBruteForce(classInfos.ToList());
-                    if(permutations != null)
+                    if (permutations != null)
                         timetables = sortPermutations(permutations).ToList();
                 }
                 else
@@ -135,7 +133,7 @@ namespace Timetabling
             //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
             List<ClassInfo> sortedClassInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count).ToList();
 
-            
+
             var classes = genPermutations(classInfos.ToList(), slots, 0);
 
             return classes;
@@ -161,6 +159,9 @@ namespace Timetabling
             var permutations = new List<List<ScheduledClass>>();
             foreach (var scheduledClass in classInfos[depth].ScheduledClasses)
             {
+                //If the request is cancelled, throw an exception upstream
+                CancellationToken.ThrowIfCancellationRequested();
+
                 //Don't schedule ones we don't want to
                 if (!scheduledClass.DoTimetable)
                     continue;

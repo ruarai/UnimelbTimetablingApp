@@ -25,7 +25,7 @@ namespace TimetablingApp.Controllers
             {
                 if (_subjectList == null)
                     _subjectList = getSubjects();
-                
+
                 return _subjectList;
             }
         }
@@ -39,7 +39,7 @@ namespace TimetablingApp.Controllers
         {
             return View(subjectList);
         }
-        
+
         //Given a list of subject codes and sorting options, generates a list of possible timetables
         [HttpPost("/Home/BuildTimetable")]
         public async Task<IActionResult> BuildTimetable([FromBody] TimetableOptionsModel model)
@@ -51,16 +51,21 @@ namespace TimetablingApp.Controllers
 
             //Assign unique ids to each of the 'original' class infos, allowing for compression to work later
             int id = 0;
-            foreach(var classInfo in originalClassInfos)
+            foreach (var classInfo in originalClassInfos)
                 classInfo.ID = id++;
 
-            //Create a new generator with our sorting options
-            Generator g = new Generator { SortLaterStarts = model.LaterStarts, SortLessDays = model.LessDays };
+            //Create a new generator with our sorting options and cancellation token
+            Generator g = new Generator
+            {
+                SortLaterStarts = model.LaterStarts,
+                SortLessDays = model.LessDays,
+                CancellationToken = HttpContext.RequestAborted
+            };
 
             long possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
 
             List<Timetable> timetables = new List<Timetable>();
-            
+
             //Check what algorithm to use, if we have over 5M permutations use the expanding algorithm
             if (possiblePermutations > 5 * 1000 * 1000)
                 timetables = g.GeneratePermutationsExpanding(classInfos);
@@ -69,7 +74,7 @@ namespace TimetablingApp.Controllers
 
             //Take 25,000 of our timetables and compress them
             var compressedTimetables = timetables.Take(25000).Select(t => new CompressedTimetable(t)).ToList();
-                
+
             return Json(new TimetableBuildResultModel(compressedTimetables, originalClassInfos.ToList()));
         }
 
@@ -80,7 +85,7 @@ namespace TimetablingApp.Controllers
             List<Subject> subjects = await subjectsFromSubjectCodes(model.SubjectCodes);
 
             //No subjects? No possible timetables.
-            if(!subjects.Any())
+            if (!subjects.Any())
                 return Json(0);
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
