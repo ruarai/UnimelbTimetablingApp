@@ -75,6 +75,7 @@
                 renderTimetable(timetableModel.timetables[0]);
 
                 $("#slider").slider("option", "max", timetableModel.timetables.length - 1);
+                $("#slider").slider("option", "value", 0);
             },
             error: function () {
                 $("#calculateButton").attr('disabled', false);
