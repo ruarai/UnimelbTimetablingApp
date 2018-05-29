@@ -163,6 +163,17 @@
         return days;
     }
 
+    var classColors = {
+        "Lecture": "039be5",
+
+        "Practical": "d81b60",
+        "Seminar": "d81b60",
+        "Workshop": "d81b60",
+        "Problem-based": "d81b60",
+        "Tutorial": "d81b60",
+    };
+
+
     var renderTimetable = function (timetable) {
         $("#timetable").fullCalendar('removeEvents');
 
@@ -177,10 +188,10 @@
                 classInfo.className;
 
             var color = string_to_color(classInfo.parentSubject.shortCode);
-            var borderColor = string_to_color(classInfo.classDescription);
+            var borderColor = classColors[classInfo.classDescription];
 
-            //color = shade(color, (scheduledClass.subjectShortCodeDigits % 4 - 2) * 16);
-
+            if (borderColor == null)
+                borderColor = classColors["Practical"];
             
             event = {
                 start: compressedClass.start,
