@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Timetabling;
-using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using TimetablingApp.Models;
-using System.Threading;
 
 namespace TimetablingApp.Controllers
 {
@@ -44,6 +41,9 @@ namespace TimetablingApp.Controllers
         [HttpPost("/Home/BuildTimetable")]
         public async Task<IActionResult> BuildTimetable([FromBody] TimetableOptionsModel model)
         {
+            if (model.SubjectCodes.Count > 4)
+                return StatusCode(403);
+
             List<Subject> subjects = await subjectsFromSubjectCodes(model.SubjectCodes);
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
@@ -82,6 +82,9 @@ namespace TimetablingApp.Controllers
         [HttpPost("/Home/UpdateSelectedSubjects")]
         public async Task<IActionResult> UpdateSelectedSubjects([FromBody]TimetableOptionsModel model)
         {
+            if (model.SubjectCodes.Count > 4)
+                return StatusCode(403);
+
             List<Subject> subjects = await subjectsFromSubjectCodes(model.SubjectCodes);
 
             //No subjects? No possible timetables.
