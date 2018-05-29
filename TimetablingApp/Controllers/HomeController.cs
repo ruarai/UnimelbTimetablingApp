@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using Timetabling;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
-using ElectronNET.API;
 using TimetablingApp.Models;
 using System.Threading;
 
