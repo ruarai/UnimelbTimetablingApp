@@ -10,13 +10,15 @@
     var subjectCount = 0;
 
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
-        $("#subjectSearch").val("");
 
-        if (subjectCount >= 4)
+        if (subjectCount >= 4) {
+            $("#subjectSearch").val("");
             return;
+        }
         subjectCount++;
         
         $("#subjectList").append(buildSubjectListing(this.value));
+        $("#subjectSearch").val("");
         updateSubjectInfo();
     });
 
