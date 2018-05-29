@@ -7,10 +7,16 @@
         list: names
     });
 
+    var subjectCount = 0;
+
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
-        $("#subjectList").append(buildSubjectListing(this.value));
         $("#subjectSearch").val("");
 
+        if (subjectCount >= 4)
+            return;
+        subjectCount++;
+        
+        $("#subjectList").append(buildSubjectListing(this.value));
         updateSubjectInfo();
     });
 
@@ -92,6 +98,8 @@
         removeButton.click(function () {
             this.parentNode.parentNode.removeChild(this.parentNode);
             updateSubjectInfo();
+
+            subjectCount--;
         });
 
         div.append(removeButton);
