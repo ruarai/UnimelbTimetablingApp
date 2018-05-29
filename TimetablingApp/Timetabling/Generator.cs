@@ -283,6 +283,8 @@ namespace Timetabling
 
         private bool permutationValid(List<ScheduledClass> permutation, IEnumerable<ClassInfo> classInfos)
         {
+            //Make sure every classInfo in classInfos has a corresponding scheduled class in our permutation
+            //That is, every class to be scheduled is scheduled.
             foreach (var classInfo in classInfos)
             {
                 if (!permutation.Any(p => classInfo.ScheduledClasses.Contains(p)))
