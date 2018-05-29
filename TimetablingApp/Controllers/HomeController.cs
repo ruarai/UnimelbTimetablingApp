@@ -121,14 +121,6 @@ namespace TimetablingApp.Controllers
 
             return Json(numPermutations);
         }
-        
-
-        private bool filterClass(ScheduledClass scheduledClass,TimeSpan earliestTime, TimeSpan latestTime, string daysString)
-        {
-            return scheduledClass.TimeStart.TimeOfDay >= earliestTime &&
-                   scheduledClass.TimeEnd.TimeOfDay <= latestTime &&
-                   daysString[(int)scheduledClass.TimeStart.DayOfWeek - 1] == '1';
-        }
 
         private List<Subject> getSubjects()
         {
