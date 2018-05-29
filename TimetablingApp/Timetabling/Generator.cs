@@ -58,8 +58,7 @@ namespace Timetabling
                 //Make sure each class is only timetabled if it is within our new period, or if there is no actual choice for this class (1 option)
                 foreach (var c in classes)
                 {
-                    c.DoTimetable = (allowedSlots[c.SlotStart] && allowedSlots[c.SlotEnd])
-                                  || c.ClassInfo.ScheduledClasses.Count == 1;
+                    c.DoTimetable = (allowedSlots[c.SlotStart] && allowedSlots[c.SlotEnd]) || c.OnlyChoice;
                 }
 
                 if (!classesValid(classInfos))
@@ -73,10 +72,7 @@ namespace Timetabling
 
                 permutations = permutations.Where(p => permutationValid(p, classInfos)).ToList();
 
-                if (generationMaxClashes == 0)
-                    timetables = sortPermutations(permutations).ToList();
-                else
-                    timetables = sortClashedPermutations(permutations).ToList();
+                timetables = sortClashedPermutations(permutations).ToList();
             }
 
             return timetables;
@@ -91,18 +87,9 @@ namespace Timetabling
             generationMaxClashes = 0;
             while (!timetables.Any())
             {
-                if (generationMaxClashes == 0)
-                {
-                    var permutations = generateBruteForce(classInfos.ToList());
-                    if (permutations != null)
-                        timetables = sortPermutations(permutations).ToList();
-                }
-                else
-                {
-                    var permutations = generateBruteForce(classInfos.ToList());
-                    if (permutations != null)
-                        timetables = sortClashedPermutations(permutations).ToList();
-                }
+                var permutations = generateBruteForce(classInfos.ToList());
+                if (permutations != null)
+                    timetables = sortClashedPermutations(permutations).ToList();
 
                 generationMaxClashes++;
             }
@@ -126,9 +113,6 @@ namespace Timetabling
         {
             var slots = new byte[24 * 4 * 5];//15 min slots over the 5 day class period
 
-            numPredicted = PossiblePermutationsCount(classInfos);
-            numGenerated = 0;
-
             //Order classes so that we start from least number of possible choices to most
             //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
             List<ClassInfo> sortedClassInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count).ToList();
@@ -149,13 +133,9 @@ namespace Timetabling
         }
 
         private int generationMaxClashes = 0;
-        private long numPredicted = 0;
-        private long numGenerated = 0;
 
         private List<List<ScheduledClass>> genPermutations(List<ClassInfo> classInfos, byte[] slots, int depth)
         {
-            numGenerated++;
-
             var permutations = new List<List<ScheduledClass>>();
             foreach (var scheduledClass in classInfos[depth].ScheduledClasses)
             {
@@ -199,31 +179,6 @@ namespace Timetabling
 
             //Return our new list
             return permutations;
-        }
-
-        private IEnumerable<Timetable> sortPermutations(IEnumerable<List<ScheduledClass>> permutations)
-        {
-            var timetables = permutations.Select(analysePermutation);
-
-            if (SortLaterStarts)
-            {
-                if (SortLessDays)
-                    return timetables.OrderBy(t => t.NumberDaysClasses)
-                        .ThenByDescending(t => t.AverageStartTime);
-                else
-                    return timetables.OrderByDescending(t => t.NumberDaysClasses)
-                        .ThenByDescending(t => t.AverageStartTime);
-            }
-            else
-            {
-                if (SortLessDays)
-                    return timetables.OrderBy(t => t.NumberDaysClasses)
-                        .ThenBy(t => t.AverageStartTime);
-                else
-                    return timetables.OrderByDescending(t => t.NumberDaysClasses)
-                        .ThenBy(t => t.AverageStartTime);
-
-            }
         }
 
         private IEnumerable<Timetable> sortClashedPermutations(IEnumerable<List<ScheduledClass>> permutations)
@@ -301,6 +256,10 @@ namespace Timetabling
             var newSlots = new byte[24 * 4 * 5];
             Array.Copy(slots, newSlots, slots.Length);
 
+            //Don't care about classes we have no choice about clashing
+            if (scheduledClass.OnlyChoice)
+                return newSlots;
+
             var classes = new List<ScheduledClass> { scheduledClass }.Concat(scheduledClass.ChildClasses);
 
             foreach (var childClass in classes)
@@ -316,6 +275,10 @@ namespace Timetabling
         private int numClashes(ScheduledClass scheduledClass, byte[] slots)
         {
             var classes = new List<ScheduledClass> { scheduledClass }.Concat(scheduledClass.ChildClasses);
+
+            //Don't care about classes we have no choice about clashing
+            if (scheduledClass.OnlyChoice)
+                return 0;
 
             int clashes = 0;
 
