@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using ElectronNET.API;
-using ElectronNET.API.Entities;
 
 namespace TimetablingApp
 {
@@ -35,22 +33,6 @@ namespace TimetablingApp
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
             app.UseStaticFiles();
-            
-            Bootstrap();
-        }
-
-        
-        public async void Bootstrap()
-        {
-            var options = new BrowserWindowOptions
-            {
-                WebPreferences = new WebPreferences
-                {
-                    WebSecurity = false
-                }
-            };
-
-            await Electron.WindowManager.CreateWindowAsync(options);
         }
     }
 }

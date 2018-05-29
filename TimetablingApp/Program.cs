@@ -7,7 +7,6 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using ElectronNET.API;
 
 namespace TimetablingApp
 {
@@ -21,7 +20,6 @@ namespace TimetablingApp
         public static IWebHost BuildWebHost(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
-                .UseElectron(args)
                 .UseStartup<Startup>()
                 .Build();
 
