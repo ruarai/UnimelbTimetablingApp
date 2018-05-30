@@ -10,8 +10,9 @@
     var subjectCount = 0;
 
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
+        var subjectCode = this.value.split(' ')[0];
 
-        if (subjectCount >= 4) {
+        if (subjectCount >= 4 || getSubjectCodes().includes(subjectCode)) {
             $("#subjectSearch").val("");
             return;
         }
