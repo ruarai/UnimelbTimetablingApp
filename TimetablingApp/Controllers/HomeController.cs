@@ -137,8 +137,6 @@ namespace TimetablingApp.Controllers
             fileName += model.LaterStarts ? "1" : "0";
             fileName += model.LessDays ? "1" : "0";
 
-            fileName += ".json";
-
             return Path.Combine(_hostingEnvironment.ContentRootPath, "TimetableCache", fileName);
         }
 
