@@ -18,6 +18,10 @@ namespace Timetabling
 
         public List<Timetable> GeneratePermutationsExpanding(IEnumerable<ClassInfo> classInfos)
         {
+            //Order classes so that we start from least number of possible choices to most
+            //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
+            classInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count);
+
             //preferred class time we will expand from, 9am and forwards if we prefer early starts, 5pm and before if we prefer later
             int preferredTime = SortLaterStarts ? 17 * 4 : 9 * 4;
 
@@ -150,7 +154,7 @@ namespace Timetabling
 
             //Order classes so that we start from least number of possible choices to most
             //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
-            List<ClassInfo> sortedClassInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count).ToList();
+            classInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count);
 
 
             var classes = genPermutations(classInfos.ToList(), slots, 0);
