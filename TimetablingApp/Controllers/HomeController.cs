@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 using Timetabling;
 using Microsoft.AspNetCore.Hosting;
 using TimetablingApp.Models;
+using System.IO.Compression;
+using Newtonsoft.Json.Serialization;
+using System.Diagnostics;
 
 namespace TimetablingApp.Controllers
 {
@@ -44,6 +47,12 @@ namespace TimetablingApp.Controllers
             if (model.SubjectCodes.Count > 4)
                 return StatusCode(403);
 
+            if (System.IO.File.Exists(getModelFilePath(model)))
+                return File(loadResult(model), "application/json; charset=utf-8");
+
+            Stopwatch responseStopwatch = new Stopwatch();
+            responseStopwatch.Start();
+
             List<Subject> subjects = await subjectsFromSubjectCodes(model.SubjectCodes);
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
@@ -75,7 +84,62 @@ namespace TimetablingApp.Controllers
             //Take 25,000 of our timetables and compress them
             var compressedTimetables = timetables.Take(25000).Select(t => new CompressedTimetable(t)).ToList();
 
-            return Json(new TimetableBuildResultModel(compressedTimetables, originalClassInfos.ToList()));
+            var result = new TimetableBuildResultModel(compressedTimetables, originalClassInfos.ToList());
+            responseStopwatch.Stop();
+
+            //Only save results for meaningfully long requests (10secs)
+            if(responseStopwatch.ElapsedMilliseconds > 10 * 1000)
+                saveResult(model, result);
+
+            return Json(result);
+        }
+
+        private Stream loadResult(TimetableOptionsModel model)
+        {
+            string path = getModelFilePath(model);
+
+            FileStream fileStream = System.IO.File.Open(path, FileMode.Open);
+
+            return new GZipStream(fileStream, CompressionMode.Decompress);
+        }
+
+        //Save our timetables to the disk so we don't have to perform the calculation again
+        //Possibly dangerous if someone manages to come up with ~100,000 different subject options of significant size, but I find this unlikely
+        //Otherwise this will fill up 10GB of disk and break whatever it's running on
+        private void saveResult(TimetableOptionsModel model, TimetableBuildResultModel result)
+        {
+            string path = getModelFilePath(model);
+
+            using (FileStream fileStream = System.IO.File.Open(path, FileMode.CreateNew))
+            {
+                using (GZipStream compressedStream = new GZipStream(fileStream, CompressionLevel.Optimal))
+                {
+                    using (StreamWriter writer = new StreamWriter(compressedStream))
+                    {
+                        JsonSerializerSettings jsonSettings = new JsonSerializerSettings
+                        {
+                            ContractResolver = new CamelCasePropertyNamesContractResolver()
+                        };
+
+                        writer.Write(JsonConvert.SerializeObject(result, jsonSettings));
+                    }
+                }
+            }
+        }
+
+
+        private string getModelFilePath(TimetableOptionsModel model)
+        {
+            string fileName = string.Join("-", model.SubjectCodes);
+
+            fileName += "_";
+
+            fileName += model.LaterStarts ? "1" : "0";
+            fileName += model.LessDays ? "1" : "0";
+
+            fileName += ".json";
+
+            return Path.Combine(_hostingEnvironment.ContentRootPath, "TimetableCache", fileName);
         }
 
         //Returns the number of possible permutations from a given list of subject codes,
