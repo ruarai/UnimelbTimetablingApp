@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace TimetablingApp
@@ -16,6 +17,9 @@ namespace TimetablingApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = System.IO.Compression.CompressionLevel.Optimal);
+            services.AddResponseCompression();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -25,7 +29,9 @@ namespace TimetablingApp
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
+            app.UseResponseCompression();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
