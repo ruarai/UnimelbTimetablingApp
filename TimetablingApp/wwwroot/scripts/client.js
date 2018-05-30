@@ -31,7 +31,8 @@
         header: false,
         allDaySlot: false,
         displayEventTime: false,
-        contentHeight: 'auto'
+        contentHeight: 'auto',
+        columnHeaderFormat: 'dddd'
     });
 
 
