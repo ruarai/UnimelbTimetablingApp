@@ -18,22 +18,20 @@ namespace Timetabling
 
         public List<Timetable> GeneratePermutationsExpanding(IEnumerable<ClassInfo> classInfos)
         {
-            //preferred class time we will expand from
-            int preferredTime = 9 * 4;
+            //preferred class time we will expand from, 9am and forwards if we prefer early starts, 5pm and before if we prefer later
+            int preferredTime = SortLaterStarts ? 17 * 4 : 9 * 4;
+
             //Time in hours from the preferred time we will try to schedule within
             int period = 0;
-
-            //Allow for expanding beyond what is necessary to get better results
-            int forceMore = 0;
 
             List<ScheduledClass> classes = classInfos.SelectMany(ci => ci.ScheduledClasses).ToList();
             classes.ForEach(c => c.DoTimetable = false);
             List<Timetable> timetables = new List<Timetable>();
 
             generationMaxClashes = 0;
-            while (!timetables.Any() || !classesValid(classInfos) || (timetables.Count < 25000 && forceMore++ < 1))
+            while (!timetables.Any() || !classesValid(classInfos) || !timetablesSpacedOut(timetables, period))
             {
-                period += 4;//Take an hour
+                period += 4;//Add an hour
 
                 if (period > 24 * 4 - preferredTime)
                 {
@@ -51,8 +49,16 @@ namespace Timetabling
                     int daySlot = day * 24 * 4;
 
                     //Starting from our preferred time, set our desired periods to true
-                    for (int quarters = preferredTime; quarters < preferredTime + period; quarters++)
-                        allowedSlots[daySlot + quarters] = true;
+                    if(SortLaterStarts)
+                    {
+                        for (int quarters = preferredTime - period; quarters < preferredTime; quarters++)
+                            allowedSlots[daySlot + quarters] = true;
+                    }
+                    else
+                    {
+                        for (int quarters = preferredTime; quarters < preferredTime + period; quarters++)
+                            allowedSlots[daySlot + quarters] = true;
+                    }
                 }
 
                 //Make sure each class is only timetabled if it is within our new period, or if there is no actual choice for this class (1 option)
@@ -106,6 +112,35 @@ namespace Timetabling
                     return false;//If not, we're missing a required class
             }
             return true;
+        }
+        
+        //Returns if a given list of timetables has at least one timetable where a day is not fully scheduled
+        private bool timetablesSpacedOut(List<Timetable> timetables, int period)
+        {
+            foreach (var t in timetables)
+            {
+                bool timetableSpaced = true;
+
+                for (int day = 1; day <= 5; day++)
+                {
+                    var classesOnDay = t.Classes.Where(c => (int)c.TimeStart.DayOfWeek == day).OrderBy(c => c.TimeStart);
+
+                    if (!classesOnDay.Any())
+                        continue;
+
+                    int earliestSlot = classesOnDay.First().SlotStart;
+
+                    int latestSlot = classesOnDay.Last().SlotEnd;
+
+                    if (latestSlot - earliestSlot == period)
+                        timetableSpaced = false;
+                }
+
+                if (timetableSpaced)
+                    return true;
+            }
+
+            return false;
         }
 
 
@@ -217,7 +252,7 @@ namespace Timetabling
             long startTimes = 0;
             long endTimes = 0;
 
-            for (int i = 1; i < 6; i++)
+            for (int i = 1; i <= 5; i++)
             {
                 var classes = t.Classes.Where(c => (int)c.TimeStart.DayOfWeek == i).OrderBy(c => c.TimeStart);
 
