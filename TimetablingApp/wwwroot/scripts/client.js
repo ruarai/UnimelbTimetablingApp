@@ -187,9 +187,6 @@
                 return element.id === scheduledClass.classInfoID;
             });
 
-            console.log(scheduledClass);
-            console.log(classInfo);
-
             $("#timetable").fullCalendar('gotoDate', scheduledClass.timeStart);
 
             var classLabel = '';
