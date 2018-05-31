@@ -34,7 +34,7 @@ namespace Timetabling
 
         public async Task UpdateTimetable()
         {
-            downloadTimetable();
+            await downloadTimetable();
 
             //Make a copy of the originals to be used in rendering
             OriginalClassInfos = new List<ClassInfo>(ClassInfos);
