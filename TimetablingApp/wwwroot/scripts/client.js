@@ -197,8 +197,16 @@
 
             $("#timetable").fullCalendar('gotoDate', compressedClass.start);
 
-            var classLabel = classInfo.parentSubject.displayName + '\n' +
-                classInfo.className;
+            var classLabel = '';
+
+            if (window.innerWidth < 900) {
+                classLabel = classInfo.parentSubject.shortCode + '\n' +
+                    classInfo.className;
+            }
+            else {
+                classLabel = classInfo.parentSubject.displayName + '\n' +
+                    classInfo.className;
+            }
 
             var color = string_to_color(classInfo.parentSubject.shortCode);
             var borderColor = classColors[classInfo.classDescription];
