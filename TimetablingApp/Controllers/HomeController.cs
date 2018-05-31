@@ -130,7 +130,8 @@ namespace TimetablingApp.Controllers
 
         private string getModelFilePath(TimetableOptionsModel model)
         {
-            string fileName = string.Join("-", model.SubjectCodes);
+            //Order subject names alphabetically
+            string fileName = string.Join("-", model.SubjectCodes.OrderBy(s => s));
 
             fileName += "_";
 
