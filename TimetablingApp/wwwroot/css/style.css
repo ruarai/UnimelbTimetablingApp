@@ -8,24 +8,21 @@
 
 #columnContainer {
     flex: 1;
-    display: flex;
-    flex-wrap: wrap;
+    display: inline-flex;
+    flex-flow: row wrap;
     height: 80%;
     margin:8px;
 }
 
-#left, #right {
-    flex: 1 300px;
-                     
-    min-width: 0;
-}
-
 #left{
-    max-width:300px;
+    flex: 1 200px;
+    min-width:200px;
 }
 
 #right{
-    max-height:1024px;
+    flex: 10 300px;
+    min-width:300px;
+    flex-wrap:wrap;
 }
 
 .borderlow {
