@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Timetabling
 {
@@ -12,41 +12,39 @@ namespace Timetabling
             TimeEnd = timeEnd;
         }
         
+        [JsonIgnore]
         public Subject ParentSubject => ClassInfo.ParentSubject;
-        public string ClassName => ClassInfo.ClassName;
-        public string ClassDescription => ClassInfo.ClassName.Split(" ")[0];//eg, Lecture, Tutorial
 
-        public string subjectDisplayName => ParentSubject.DisplayName;
-        public string subjectShortCode => ParentSubject.ShortCode;
-        
+        [JsonIgnore]
         public ClassInfo ClassInfo { get; set; }
-        
-        public string Location { get; set; }
 
+        [JsonIgnore]
+        public string Location { get; set; }
+        
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
-        
-        public bool OnlyChoice
-        {
-            get
-            {
-                //If there's only one scheduled class in our parent class, then
-                //we're the only choice
-                return ClassInfo.ScheduledClasses.Count == 1;
-            }
-        }
-            
-        public short SlotStart { get { return dateToSlot(TimeStart); } }
-        public short SlotEnd { get { return dateToSlot(TimeEnd); } }
-        
-        public TimeSpan Duration => TimeEnd - TimeStart;
+
+        [JsonIgnore]
+        public bool OnlyChoice => ClassInfo.ScheduledClasses.Count == 1;
+
+        [JsonIgnore]
+        public short SlotStart => dateToSlot(TimeStart);
+        [JsonIgnore]
+        public short SlotEnd => dateToSlot(TimeEnd);
+
+        [JsonIgnore]
         public short ClassNumber { get; set; }
-        
+
+        [JsonIgnore]
         public bool DoTimetable { get; set; } = false;
-        
-        public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
+
         //Classes that are of the same number, e.g. stream lectures
         //These classes are dependent entirely upon the scheduling of this class.
+        [JsonIgnore]
+        public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
+        
+        public int ID { get; set; }
+        public int ClassInfoID => ClassInfo.ID;
 
         
 

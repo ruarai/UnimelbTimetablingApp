@@ -58,10 +58,16 @@ namespace TimetablingApp.Controllers
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
             IEnumerable<ClassInfo> originalClassInfos = subjects.SelectMany(subject => subject.OriginalClassInfos);
 
-            //Assign unique ids to each of the 'original' class infos, allowing for compression to work later
+            var allScheduledClasses = classInfos.SelectMany(ci => ci.AllScheduledClasses);
+
+            //Assign unique ids to each of the 'original' class infos, allowing for compression to work later, and same for scheduled classes
             int id = 0;
             foreach (var classInfo in originalClassInfos)
                 classInfo.ID = id++;
+            id = 0;
+            foreach (var scheduledClass in allScheduledClasses)
+                scheduledClass.ID = id++;
+
 
             //Create a new generator with our sorting options and cancellation token
             Generator g = new Generator
@@ -81,10 +87,11 @@ namespace TimetablingApp.Controllers
             else
                 timetables = g.GenerateTimetablesBruteForce(classInfos);
 
-            //Take 25,000 of our timetables and compress them
-            var compressedTimetables = timetables.Take(25000).Select(t => new CompressedTimetable(t)).ToList();
+            //Take 500,000 of our timetables and compress them
+            var compressedTimetables = timetables.Take(500000).ToList();
 
-            var result = new TimetableBuildResultModel(compressedTimetables, originalClassInfos.ToList());
+
+            var result = new TimetableBuildResultModel(compressedTimetables, allScheduledClasses.ToList(), originalClassInfos.ToList());
             responseStopwatch.Stop();
 
             //Only save results for meaningfully long requests (10secs)

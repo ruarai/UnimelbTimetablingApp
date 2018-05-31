@@ -49,8 +49,9 @@
         }
     });
 
-    var classInfos = [];
     var timetables = [];
+    var scheduledClasses = [];
+    var classInfos = [];
 
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
@@ -79,8 +80,9 @@
 
                 setStatus('Generated ' + timetableModel.timetables.length.toLocaleString() + ' timetables.');
 
-                classInfos = timetableModel.originalClassInfos;
                 timetables = timetableModel.timetables;
+                scheduledClasses = timetableModel.allScheduledClasses;
+                classInfos = timetableModel.originalClassInfos;
 
                 renderTimetable(timetableModel.timetables[0]);
 
@@ -163,19 +165,6 @@
         $("#timetablesInfo").append(status);
     }
 
-    var getDays = function () {
-        var days = '';
-
-        $('#dayList').children().each(function () {
-            if ($(this).attr('ticked') === 'true')
-                days = days + '1';
-            else
-                days = days + '0';
-        });
-
-        return days;
-    }
-
     var classColors = {
         "Lecture": "039be5",
 
@@ -190,12 +179,18 @@
     var renderTimetable = function (timetable) {
         $("#timetable").fullCalendar('removeEvents');
 
-        timetable.classes.forEach(function (compressedClass) {
-            classInfo = classInfos.find(function (element) {
-                return element.id === compressedClass.id;
+        timetable.forEach(function (classID) {
+            var scheduledClass = scheduledClasses.find(function(element) {
+                return element.id === classID;
+            });
+            var classInfo = classInfos.find(function (element) {
+                return element.id === scheduledClass.classInfoID;
             });
 
-            $("#timetable").fullCalendar('gotoDate', compressedClass.start);
+            console.log(scheduledClass);
+            console.log(classInfo);
+
+            $("#timetable").fullCalendar('gotoDate', scheduledClass.timeStart);
 
             var classLabel = '';
 
@@ -215,8 +210,8 @@
                 borderColor = classColors["Practical"];
             
             event = {
-                start: compressedClass.start,
-                end: compressedClass.end,
+                start: scheduledClass.timeStart,
+                end: scheduledClass.timeEnd,
                 title: classLabel,
                 backgroundColor: '#' + color,
                 borderColor: '#' + borderColor,
@@ -238,22 +233,5 @@
         // http://stackoverflow.com/a/3943023/112731
         return r * 0.299 + g * 0.587 + b * 0.114 > 200 ? '#000000' : '#FFFFFF';
     }
-
-
-    // Change the darkness or lightness
-    var shade = function (color, prc) {
-        var num = parseInt(color, 16),
-            amt = Math.round(2.55 * prc),
-            R = (num >> 16) + amt,
-            G = (num >> 8 & 0x00FF) + amt,
-            B = (num & 0x0000FF) + amt;
-        return (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255))
-            .toString(16)
-            .slice(1);
-    };
-
-
 });
 
