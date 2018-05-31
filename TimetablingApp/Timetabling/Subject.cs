@@ -34,6 +34,20 @@ namespace Timetabling
 
         public async Task UpdateTimetable()
         {
+            downloadTimetable();
+
+            //Make a copy of the originals to be used in rendering
+            OriginalClassInfos = new List<ClassInfo>(ClassInfos);
+
+            consolidateClasses();
+
+            removeEquivalentClasses();
+
+            placeClassesIntoSingleWeek();
+        }
+
+        private async Task downloadTimetable()
+        {
             ClassInfos = new List<ClassInfo>();
 
             string resultStr = await getTimetableHTML(Code);
@@ -41,23 +55,21 @@ namespace Timetabling
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(resultStr);
 
-            var tables = doc.DocumentNode.Descendants("table");
+            List<HtmlNode> tables = doc.DocumentNode.Descendants("table").ToList();
 
-            IEnumerable<HtmlNode> rows = new List<HtmlNode>();
-            
+            List<HtmlNode> rows = new List<HtmlNode>();
+
             //We look for the first non-empty table
             //This is okay as everything is filtered elsewhere (so we can ignore summer/winter/whatever)
             int i = 0;
-            while(!rows.Any())
+            while (!rows.Any())
             {
-                HtmlNode timesTable = tables.Skip(i).FirstOrDefault();
-                
+                HtmlNode timesTable = tables.Skip(i++).FirstOrDefault();
+
                 if (timesTable == null)
                     return;
 
-                rows = timesTable.Descendants("tbody").First().Descendants("tr");
-
-                i++;
+                rows = timesTable.Descendants("tbody").First().Descendants("tr").ToList();
             }
 
             foreach (var row in rows)
@@ -67,13 +79,13 @@ namespace Timetabling
                     var elements = row.Descendants("td").ToArray();
 
                     string date = elements[9].InnerText;
-                    string start = date + " " + elements[3].InnerText;
-                    string end = date + " " + elements[4].InnerText;
+                    string startTime = date + " " + elements[3].InnerText;
+                    string endTime = date + " " + elements[4].InnerText;
 
                     string[] info = elements[0].InnerText.Split('/');
 
-                    var timeStart = DateTime.ParseExact(start, "dd MMM yyyy HH:mm", CultureInfo.InvariantCulture);
-                    var timeEnd = DateTime.ParseExact(end, "dd MMM yyyy HH:mm", CultureInfo.InvariantCulture);
+                    var timeStart = DateTime.ParseExact(startTime, "dd MMM yyyy HH:mm", CultureInfo.InvariantCulture);
+                    var timeEnd = DateTime.ParseExact(endTime, "dd MMM yyyy HH:mm", CultureInfo.InvariantCulture);
 
                     ScheduledClass scheduledClass = new ScheduledClass(timeStart, timeEnd)
                     {
@@ -106,16 +118,24 @@ namespace Timetabling
                     }
                 }
                 catch (Exception)//Sadly can't trust timetable to be in correct format
-                {   }
+                { }
             }
+        }
 
-            //Make a copy of the originals to be used in rendering
-            OriginalClassInfos = new List<ClassInfo>(ClassInfos);
+        private void consolidateClasses()
+        {
+            //Consolidating lecture/tute/seminar streams: (dangerous?)
+            joinStreamedClasses("L");
+            joinStreamedClasses("T");
+            joinStreamedClasses("S");
 
-            consolidateClasses();
+            //Add exceptions to the common standards here
+            if(Code == "MAST10007")
+                joinStreamedClasses("P");
+        }
 
-            //Removing equivalent classes:
-
+        private void removeEquivalentClasses()
+        {
             foreach (var classInfo in ClassInfos)
             {
                 var removals = new List<ScheduledClass>();//Can't remove them during enumeration, must collect to remove later
@@ -131,41 +151,12 @@ namespace Timetabling
                 foreach (var removal in removals)
                     classInfo.ScheduledClasses.Remove(removal);
             }
-
-            DateTime earliestClass = DateTime.MaxValue;
-
-            foreach (var scheduledClass in AllClasses)
-            {
-                if (scheduledClass.TimeStart < earliestClass)
-                    earliestClass = scheduledClass.TimeStart;
-            }
-            int earliestWeek = getWeekOfYear(earliestClass);
-
-
-            foreach (var scheduledClass in AllClasses)
-            {
-                while(getWeekOfYear(scheduledClass.TimeStart) > earliestWeek)
-                {
-                    scheduledClass.TimeStart = scheduledClass.TimeStart - TimeSpan.FromDays(7);
-                    scheduledClass.TimeEnd = scheduledClass.TimeEnd - TimeSpan.FromDays(7);
-                }
-            }
         }
 
-        private void consolidateClasses()
+        private void joinStreamedClasses(string classCode)
         {
-            //Consolidating lecture/tute/seminar streams: (dangerous?)
-            consolidateStreams("L");
-            consolidateStreams("T");
-            consolidateStreams("S");
+            //Takes streamed classes of type classCode and connects them 
 
-            //Add exceptions to the common standards here
-            if(Code == "MAST10007")
-                consolidateStreams("P");
-        }
-
-        private void consolidateStreams(string classCode)
-        {
             var streamedClasses = ClassInfos.Where(c => c.ClassType.StartsWith(classCode)).OrderBy(c => c.ClassType);
 
             if (!streamedClasses.Any())
@@ -185,6 +176,30 @@ namespace Timetabling
                 ClassInfos.Remove(c);   
         }
 
+        private void placeClassesIntoSingleWeek()
+        {
+            //Takes all the classes and forces them into the same week
+
+            DateTime earliestClass = DateTime.MaxValue;
+
+            foreach (var scheduledClass in AllClasses)
+            {
+                if (scheduledClass.TimeStart < earliestClass)
+                    earliestClass = scheduledClass.TimeStart;
+            }
+            int earliestWeek = getWeekOfYear(earliestClass);
+
+
+            foreach (var scheduledClass in AllClasses)
+            {
+                while (getWeekOfYear(scheduledClass.TimeStart) > earliestWeek)
+                {
+                    scheduledClass.TimeStart = scheduledClass.TimeStart - TimeSpan.FromDays(7);
+                    scheduledClass.TimeEnd = scheduledClass.TimeEnd - TimeSpan.FromDays(7);
+                }
+            }
+        }
+
         private int getWeekOfYear(DateTime dt)
         {
             GregorianCalendar calendar = new GregorianCalendar();
@@ -199,8 +214,9 @@ namespace Timetabling
 
             return a.SlotStart == b.SlotStart && a.SlotEnd == b.SlotEnd;
         }
-
+        
         private const string SemesterWeeks = "30-42";
+        private const string TimetableYear = "2018";
 
         private async Task<string> getTimetableHTML(string subjectCode)
         {
@@ -208,7 +224,7 @@ namespace Timetabling
 
             string query = "?objects=" + subjectCode + "&weeks=" + SemesterWeeks + "&days=1-7&periods=1-56&template=module_by_group_list";
 
-            var request = new RestRequest("/2018/Reports/List.aspx" + query);
+            var request = new RestRequest("/" + TimetableYear + "/Reports/List.aspx" + query);
 
             return (await c.ExecuteTaskAsync<string>(request)).Content;
         }
