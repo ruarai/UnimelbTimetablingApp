@@ -20,3 +20,8 @@ Sorts the timetables according to the average start time. Unticking this will pr
 ### Prefer Less days
 
 Sorts the timetables according to number of scheduled days. This choice receives higher preference over 'Prefer Later Starts'. Unticking this will prefer timetables with more days scheduled.
+
+### Clashing
+
+The generator will always prefer to generate timetables that do not clash. If clashing is necessary, the timetables will be sorted so
+as to reduce the number of clashes.
