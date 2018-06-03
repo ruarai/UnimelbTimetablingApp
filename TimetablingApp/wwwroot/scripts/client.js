@@ -69,6 +69,16 @@
         };
 
         $.ajax({
+            xhr: function () {
+                var xhr = new window.XMLHttpRequest();
+                xhr.addEventListener("progress", function (evt) {
+                    if (evt.loaded > 0) {
+                        setStatus('Downloading timetables...');
+                    }
+                }, false);
+
+                return xhr;
+            },
             url: '/Home/BuildTimetable',
             dataType: 'json',
             type: 'POST',
@@ -136,6 +146,8 @@
             subjectCodes: getSubjectCodes()
         };
 
+        setSubjectInfo('Fetching timetable info...');
+
         $.ajax({
             url: '/Home/UpdateSelectedSubjects',
             dataType: 'json',
@@ -146,11 +158,11 @@
                 $("#subjectInfo").empty();
 
                 if (numPermutations > 0) {
-                    $("#subjectInfo").append(numPermutations.toLocaleString() + ' possible timetables.');
+                    setSubjectInfo(numPermutations.toLocaleString() + ' possible timetables.');
                     $("#calculateButton").attr('disabled', false);
                 }
                 else {
-                    $("#subjectInfo").append('Select some subjects to begin.');
+                    setSubjectInfo('Select some subjects to begin.');
                     //keep disabled until permutations possible
                     $("#calculateButton").attr('disabled', true);
                 }
@@ -163,6 +175,11 @@
     var setStatus = function (status) {
         $("#timetablesInfo").empty();
         $("#timetablesInfo").append(status);
+    }
+
+    var setSubjectInfo = function(status) {
+        $("#subjectInfo").empty();
+        $("#subjectInfo").append(status);
     }
 
     var classColors = {
