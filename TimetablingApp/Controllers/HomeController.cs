@@ -50,9 +50,6 @@ namespace TimetablingApp.Controllers
             if (System.IO.File.Exists(getModelFilePath(model)))
                 return File(loadResult(model), "application/json; charset=utf-8");
 
-            Stopwatch responseStopwatch = new Stopwatch();
-            responseStopwatch.Start();
-
             List<Subject> subjects = await subjectsFromSubjectCodes(model.SubjectCodes);
 
             IEnumerable<ClassInfo> classInfos = subjects.SelectMany(subject => subject.ClassInfos);
@@ -92,11 +89,8 @@ namespace TimetablingApp.Controllers
 
 
             var result = new TimetableBuildResultModel(compressedTimetables, allScheduledClasses.ToList(), originalClassInfos.ToList());
-            responseStopwatch.Stop();
-
-            //Only save results for meaningfully long requests (10secs)
-            if(responseStopwatch.ElapsedMilliseconds > 10 * 1000)
-                saveResult(model, result);
+            
+            saveResult(model, result);
 
             return Json(result);
         }
