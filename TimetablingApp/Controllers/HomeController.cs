@@ -84,8 +84,8 @@ namespace TimetablingApp.Controllers
             else
                 timetables = g.GenerateTimetablesBruteForce(classInfos);
 
-            //Take 500,000 of our timetables and compress them
-            var compressedTimetables = timetables.Take(500000).ToList();
+            //Take 25,000 of our timetables and compress them
+            var compressedTimetables = timetables.Take(25000).ToList();
 
 
             var result = new TimetableBuildResultModel(compressedTimetables, allScheduledClasses.ToList(), originalClassInfos.ToList());
