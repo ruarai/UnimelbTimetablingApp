@@ -6,9 +6,13 @@ namespace TimetablingApp.Models
 {
     public class TimetableBuildResultModel
     {
-        public TimetableBuildResultModel(List<Timetable> timetables, List<ScheduledClass> allScheduledClasses, List<ClassInfo> originalClassInfos)
+        public TimetableBuildResultModel(List<Timetable> timetables,
+            int timetablesGenerated,
+            List<ScheduledClass> allScheduledClasses,
+            List<ClassInfo> originalClassInfos)
         {
             Timetables = compressTimetables(timetables);
+            TimetablesGenerated = timetablesGenerated;
             AllScheduledClasses = allScheduledClasses;
             OriginalClassInfos = originalClassInfos;
         }
@@ -16,6 +20,8 @@ namespace TimetablingApp.Models
         public List<List<int>> Timetables { get; set; }
         public List<ScheduledClass> AllScheduledClasses { get; set; }
         public List<ClassInfo> OriginalClassInfos { get; set; }
+
+        public int TimetablesGenerated { get; set; }
 
         private static List<List<int>> compressTimetables(List<Timetable> timetables)
         {

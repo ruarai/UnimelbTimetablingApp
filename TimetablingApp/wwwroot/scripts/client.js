@@ -88,7 +88,7 @@
             success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
 
-                setStatus('Generated ' + timetableModel.timetables.length.toLocaleString() + ' timetables.');
+                setStatus('Generated ' + timetableModel.timetablesGenerated.toLocaleString() + ' timetables.');
 
                 timetables = timetableModel.timetables;
                 scheduledClasses = timetableModel.allScheduledClasses;
