@@ -155,7 +155,7 @@ namespace TimetablingApp.Controllers
         [HttpPost("/Home/UpdateSelectedSubjects")]
         public async Task<IActionResult> UpdateSelectedSubjects([FromBody]TimetableOptionsModel model)
         {
-            if (model.SubjectCodes.Count > 4)
+            if (model.SubjectCodes.Count > 5)
                 return StatusCode(403);
 
             List<Subject> subjects = await subjectsFromSubjectCodes(model.SubjectCodes);
