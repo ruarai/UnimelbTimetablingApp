@@ -44,7 +44,7 @@ namespace TimetablingApp.Controllers
         [HttpPost("/Home/BuildTimetable")]
         public async Task<IActionResult> BuildTimetable([FromBody] TimetableOptionsModel model)
         {
-            if (model.SubjectCodes.Count > 4)
+            if (model.SubjectCodes.Count > 5)
                 return StatusCode(403);
 
             if (System.IO.File.Exists(getModelFilePath(model)))
@@ -75,6 +75,11 @@ namespace TimetablingApp.Controllers
             };
 
             long possiblePermutations = Generator.PossiblePermutationsCount(classInfos);
+
+            //Trying to generate when there's more than a trillion possibilities is a bad idea
+            if(possiblePermutations > (long)1000 * 1000 * 1000 * 1000)
+                return StatusCode(403);
+
 
             List<Timetable> timetables = new List<Timetable>();
 
