@@ -44,6 +44,7 @@ namespace Timetabling
         public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
         
         public int ID { get; set; }
+        public int ClassInfoID => ClassInfo.ID;
 
         
 

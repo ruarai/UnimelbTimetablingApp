@@ -9,6 +9,13 @@
 
     var subjectCount = 0;
 
+    var setStatus;
+    var updateSubjectInfo;
+    var renderTimetable;
+    var setSubjectInfo;
+
+
+
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
         var subjectCode = this.value.split(' ')[0];
 
@@ -137,7 +144,7 @@
         return subjectCodes;
     }
 
-    var updateSubjectInfo = function () {
+    updateSubjectInfo = function () {
         //disable calculation whilst this happens, otherwise weird stuff can happen with timetable retrieval internally
         $("#calculateButton").attr('disabled', true);
         
@@ -169,18 +176,18 @@
 
             }
         });
-    }
+    };
 
 
-    var setStatus = function (status) {
+    setStatus = function (status) {
         $("#timetablesInfo").empty();
         $("#timetablesInfo").append(status);
-    }
+    };
 
-    var setSubjectInfo = function(status) {
+    setSubjectInfo = function(status) {
         $("#subjectInfo").empty();
         $("#subjectInfo").append(status);
-    }
+    };
 
     var classColors = {
         "Lecture": "039be5",
@@ -193,7 +200,7 @@
     };
 
 
-    var renderTimetable = function (timetable) {
+    renderTimetable = function (timetable) {
         $("#timetable").fullCalendar('removeEvents');
 
         timetable.forEach(function (classID) {
