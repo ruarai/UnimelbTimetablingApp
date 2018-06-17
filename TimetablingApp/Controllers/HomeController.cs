@@ -10,6 +10,7 @@ using TimetablingApp.Models;
 using System.IO.Compression;
 using Newtonsoft.Json.Serialization;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace TimetablingApp.Controllers
 {
@@ -148,7 +149,13 @@ namespace TimetablingApp.Controllers
             fileName += model.LaterStarts ? "1" : "0";
             fileName += model.LessDays ? "1" : "0";
 
-            return Path.Combine(_hostingEnvironment.ContentRootPath, "TimetableCache", fileName);
+            //Remove illegal characters so that people can't navigate through directories
+            Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+            fileName = rgx.Replace(fileName, "");
+
+            string path = Path.Combine(_hostingEnvironment.ContentRootPath, "TimetableCache", fileName);
+
+            return path;
         }
 
         //Returns the number of possible permutations from a given list of subject codes,
