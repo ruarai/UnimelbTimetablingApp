@@ -155,8 +155,7 @@ namespace Timetabling
             //Order classes so that we start from least number of possible choices to most
             //Allows unresolvable clashes to occur early, so generation will not create unnecessary classes.
             classInfos = classInfos.OrderBy(ci => ci.ScheduledClasses.Count);
-
-
+            
             var classes = genPermutations(classInfos.ToList(), slots, 0);
 
             return classes;
@@ -171,7 +170,7 @@ namespace Timetabling
             return prod;
         }
 
-        private int generationMaxClashes = 0;
+        private int generationMaxClashes;
 
         private List<List<ScheduledClass>> genPermutations(List<ClassInfo> classInfos, byte[] slots, int depth)
         {
@@ -213,84 +212,53 @@ namespace Timetabling
                 }
             }
 
-            if (!permutations.Any())
-                return null;
-
             //Return our new list
-            return permutations;
+            return !permutations.Any() ? null : permutations;
         }
 
         private IEnumerable<Timetable> sortClashedPermutations(IEnumerable<List<ScheduledClass>> permutations)
         {
-            var timetables = permutations.Select(analysePermutation);
+            var timetables = permutations.Select(p => new Timetable(p));
 
+            var clashes = new Func<Timetable, long>(t => t.NumberClashes);
+            var days = new Func<Timetable, byte>(t => t.NumberDaysClasses);
+            var startTime = new Func<Timetable, long>(t => t.AverageStartTime);
+
+            var clashOrder = timetables.OrderBy(clashes);
+            
             if (SortLaterStarts)
             {
                 if (SortLessDays)
-                    return timetables.OrderBy(t => t.NumberClashes)
-                        .ThenBy(t => t.NumberDaysClasses)
-                        .ThenByDescending(t => t.AverageStartTime);
+                    return clashOrder
+                        .ThenBy(days)
+                        .ThenByDescending(startTime);
                 else
-                    return timetables.OrderBy(t => t.NumberClashes)
-                        .ThenByDescending(t => t.NumberDaysClasses)
-                        .ThenByDescending(t => t.AverageStartTime);
+                    return clashOrder
+                        .ThenByDescending(days)
+                        .ThenByDescending(startTime);
             }
             else
             {
                 if (SortLessDays)
-                    return timetables.OrderBy(t => t.NumberClashes)
-                        .ThenBy(t => t.NumberDaysClasses)
-                        .ThenBy(t => t.AverageStartTime);
+                    return clashOrder
+                        .ThenBy(days)
+                        .ThenBy(startTime);
                 else
-                    return timetables.OrderBy(t => t.NumberClashes)
-                        .ThenByDescending(t => t.NumberDaysClasses)
-                        .ThenBy(t => t.AverageStartTime);
-
+                    return clashOrder
+                        .ThenByDescending(days)
+                        .ThenBy(startTime);
             }
         }
-
-        private Timetable analysePermutation(List<ScheduledClass> permutation)
-        {
-            Timetable t = new Timetable(permutation);
-
-            long startTimes = 0;
-            long endTimes = 0;
-
-            for (int i = 1; i <= 5; i++)
-            {
-                var classes = t.Classes.Where(c => (int)c.TimeStart.DayOfWeek == i).OrderBy(c => c.TimeStart);
-
-                if (classes.Any())
-                {
-                    t.NumberDaysClasses++;
-
-                    startTimes += classes.First().TimeStart.TimeOfDay.Ticks;
-                    endTimes += classes.Last().TimeEnd.TimeOfDay.Ticks;
-                }
-            }
-
-            t.AverageStartTime = startTimes / t.NumberDaysClasses;
-            t.AverageEndTime = endTimes / t.NumberDaysClasses;
-
-
-            return t;
-        }
-
-        private bool permutationValid(List<ScheduledClass> permutation, IEnumerable<ClassInfo> classInfos)
+        
+        private static bool permutationValid(List<ScheduledClass> permutation, IEnumerable<ClassInfo> classInfos)
         {
             //Make sure every classInfo in classInfos has a corresponding scheduled class in our permutation
             //That is, every class to be scheduled is scheduled.
-            foreach (var classInfo in classInfos)
-            {
-                if (!permutation.Any(p => classInfo.ScheduledClasses.Contains(p)))
-                    return false;
-            }
-            return true;
+            return classInfos.All(classInfo => permutation.Any(p => classInfo.ScheduledClasses.Contains(p)));
         }
-
-
-
-        private byte[] updateSlots(ScheduledClass scheduledClass, byte[] slots)
+        
+        //Adds occupancy to slots for some new scheduledClass
+        private static byte[] updateSlots(ScheduledClass scheduledClass, byte[] slots)
         {
             var newSlots = new byte[24 * 4 * 5];
             Array.Copy(slots, newSlots, slots.Length);
@@ -304,14 +272,13 @@ namespace Timetabling
             foreach (var childClass in classes)
             {
                 for (int i = childClass.SlotStart; i < childClass.SlotEnd; i++)
-                {
                     newSlots[i]++;
-                }
             }
             return newSlots;
         }
 
-        private int numClashes(ScheduledClass scheduledClass, byte[] slots)
+        //Calculate the total number of clashes that will occur after adding some scheduledClass on slots
+        private static int numClashes(ScheduledClass scheduledClass, byte[] slots)
         {
             var classes = new List<ScheduledClass> { scheduledClass }.Concat(scheduledClass.ChildClasses);
 
@@ -334,7 +301,5 @@ namespace Timetabling
             }
             return clashes;
         }
-
-
     }
 }

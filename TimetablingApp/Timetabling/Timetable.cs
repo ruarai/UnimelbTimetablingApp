@@ -11,25 +11,40 @@ namespace Timetabling
 
             Classes = new ScheduledClass[size];
 
-            int i = 0;
+            //Fill the classes array, including all child classes
+            int j = 0;
             foreach (var scheduledClass in permutation)
             {
-                Classes[i] = scheduledClass;
-                i++;
+                Classes[j] = scheduledClass;
+                j++;
                 foreach (var childClass in scheduledClass.ChildClasses)
                 {
-                    Classes[i] = childClass;
-                    i++;
+                    Classes[j] = childClass;
+                    j++;
                 }
             }
+
+            //Calculate average start time and total number of days
+            long startTimes = 0;
+            for (int i = 1; i <= 5; i++)
+            {
+                var classes = Classes.Where(c => (int)c.TimeStart.DayOfWeek == i).OrderBy(c => c.TimeStart);
+
+                if (classes.Any())
+                {
+                    NumberDaysClasses++;
+                    startTimes += classes.First().TimeStart.TimeOfDay.Ticks;
+                }
+            }
+
+            AverageStartTime = startTimes / NumberDaysClasses;
         }
 
 
         public ScheduledClass[] Classes { get; set; }
         public long AverageStartTime { get; set; }
-        public long AverageEndTime { get; set; }
         public byte NumberDaysClasses { get; set; }
-        public long NumberClashes {
+        public int NumberClashes {
             get
             {
                 var slots = new int[24 * 4 * 5];
