@@ -190,13 +190,11 @@
     };
 
     var classColors = {
-        "Lecture": "039be5",
-
-        "Practical": "d81b60",
-        "Seminar": "d81b60",
-        "Workshop": "d81b60",
-        "Problem-based": "d81b60",
-        "Tutorial": "d81b60",
+        "Practical": "ffffff",
+        "Seminar": "ffffff",
+        "Workshop": "ffffff",
+        "Problem-based": "ffffff",
+        "Tutorial": "ffffff",
     };
 
 
@@ -228,7 +226,7 @@
             var borderColor = classColors[classInfo.classDescription];
 
             if (borderColor == null)
-                borderColor = classColors["Practical"];
+                borderColor = color;
             
             event = {
                 start: scheduledClass.timeStart,

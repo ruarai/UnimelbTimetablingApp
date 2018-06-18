@@ -4,6 +4,7 @@
     min-height: 100vh;
     flex-direction: column;
     margin:0;
+    padding: 0;
 }
 
 #columnContainer {
@@ -11,7 +12,6 @@
     display: inline-flex;
     flex-flow: row wrap;
     height: 80%;
-    margin:8px;
 }
 
 #left{
@@ -35,7 +35,16 @@
 
 .border {
     margin: 0 auto;
-    padding: 6px;
+    padding: 0 6px 6px 0;
+}
+
+#timetableBorder {
+    padding: 0 0 6px 0;
+    background-position: 1px 0;
+}
+
+#timetable {
+    background-color: white;
 }
 
 .content {
@@ -102,7 +111,7 @@ a:visited, a {
 
 #calculateButton {
     float: right;
-    background-color:black;
+    background-color:#111111;
     text-decoration: none;
     border: none;
     padding: 4px;
@@ -116,7 +125,7 @@ a:visited, a {
     #calculateButton[disabled] {
         background-color: white;
         background-image: url('/img/dither_mediumdense.png');
-        color: black;
+        color: #111111;
     }
 
 .inlineAction {
@@ -134,8 +143,8 @@ a:visited, a {
 input[type="time"] {
     font-family: Montserrat,sans-serif;
     width: 103px;
-    padding:2px;
-    border: 1px solid black;
+    padding: 2px;
+    border: 1px solid #111111;
     border-radius: 2px;
 }
 
@@ -146,16 +155,15 @@ input[type="time"] {
     display: inline-block;
     cursor: pointer;
     outline: 0;
-
     background-color: white;
     background-image: url('/img/dither_highdense.png');
     padding: 4px;
-    color: black;
-    border: 1px solid black;
+    color: #111111;
+    border: 1px solid #111111;
 }
 
     .dayButton[ticked="true"] {
-        background-color: black;
+        background-color: #111111;
         color: white;
         padding: 5px;
         border: none;
@@ -173,7 +181,10 @@ hr {
 
 
 .fc-time-grid-event {
-    border-width:2px !important;
+    border-width: 2px 0 0 2px !important;
+    border-radius: 0;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11px;
 }
 .fc-day-header {
     font-weight: normal;
@@ -199,4 +210,20 @@ hr {
 
 .fc-unthemed td.fc-today{
     background-color:white;
+}
+
+
+thead>tr>td {
+    border-top: 0 !important;
+}
+table tr:last-child td {
+    border-bottom: 0;
+}
+table tr td:first-child,
+table tr th:first-child {
+    border-left: 0;
+}
+table tr td:last-child,
+table tr th:last-child {
+    border-right: 0;
 }
