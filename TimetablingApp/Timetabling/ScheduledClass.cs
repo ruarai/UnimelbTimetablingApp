@@ -42,7 +42,8 @@ namespace Timetabling
         //These classes are dependent entirely upon the scheduling of this class.
         [JsonIgnore]
         public List<ScheduledClass> ChildClasses { get; set; } = new List<ScheduledClass>();
-        
+
+        [JsonIgnore]
         public int ID { get; set; }
         public int ClassInfoID => ClassInfo.ID;
 

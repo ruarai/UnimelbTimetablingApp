@@ -202,12 +202,10 @@
         $("#timetable").fullCalendar('removeEvents');
 
         timetable.forEach(function (classID) {
-            var scheduledClass = scheduledClasses.find(function(element) {
-                return element.id === classID;
-            });
-            var classInfo = classInfos.find(function (element) {
-                return element.id === scheduledClass.classInfoID;
-            });
+            var scheduledClass = scheduledClasses[classID];
+            console.log(scheduledClass);
+            var classInfo = classInfos[scheduledClass.classInfoID];
+            console.log(classInfo);
 
             $("#timetable").fullCalendar('gotoDate', scheduledClass.timeStart);
 
@@ -234,7 +232,8 @@
                 title: classLabel,
                 backgroundColor: '#' + color,
                 borderColor: '#' + borderColor,
-                textColor: invertColor(color)
+                textColor: invertColor(color),
+                editable: true
             };
 
             $("#timetable").fullCalendar('renderEvent', event);
