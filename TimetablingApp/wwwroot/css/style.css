@@ -36,6 +36,7 @@
 .border {
     margin: 0 auto;
     padding: 0 6px 6px 0;
+    image-rendering: pixelated;
 }
 
 #timetableBorder {
