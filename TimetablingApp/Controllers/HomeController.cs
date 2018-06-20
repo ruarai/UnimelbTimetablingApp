@@ -58,14 +58,6 @@ namespace TimetablingApp.Controllers
 
             var allScheduledClasses = classInfos.SelectMany(ci => ci.AllScheduledClasses);
 
-            //Assign unique ids to each of the 'original' class infos, allowing for compression to work later, and same for scheduled classes
-            int id = 0;
-            foreach (var classInfo in originalClassInfos)
-                classInfo.ID = id++;
-            id = 0;
-            foreach (var scheduledClass in allScheduledClasses)
-                scheduledClass.ID = id++;
-
 
             //Create a new generator with our sorting options and cancellation token
             Generator g = new Generator

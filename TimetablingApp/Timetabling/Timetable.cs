@@ -15,16 +15,10 @@ namespace Timetabling
             int j = 0;
             foreach (var scheduledClass in permutation)
             {
-                scheduledClass.NeighbourClassIDs = scheduledClass.ChildClasses.Select(s => s.ID).ToList();
-
                 Classes[j] = scheduledClass;
                 j++;
                 foreach (var childClass in scheduledClass.ChildClasses)
                 {
-                    var otherChildIDs = scheduledClass.NeighbourClassIDs.Except(new [] {childClass.ID});
-
-                    childClass.NeighbourClassIDs = otherChildIDs.Append(scheduledClass.ID).ToList();
-
                     Classes[j] = childClass;
                     j++;
                 }

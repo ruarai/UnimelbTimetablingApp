@@ -11,6 +11,28 @@ namespace TimetablingApp.Models
             List<ScheduledClass> allScheduledClasses,
             List<ClassInfo> originalClassInfos)
         {
+            //Assign unique ids to each of the 'original' class infos, allowing for compression to work later, and same for scheduled classes
+            int id = 0;
+            foreach (var classInfo in originalClassInfos)
+                classInfo.ID = id++;
+            id = 0;
+            foreach (var scheduledClass in allScheduledClasses)
+                scheduledClass.ID = id++;
+
+
+            //Build the bi-directional neighbour class listings
+            foreach (var scheduledClass in allScheduledClasses)
+            {
+                scheduledClass.NeighbourClassIDs = scheduledClass.ChildClasses.Select(s => s.ID).ToList();
+
+                foreach (var childClass in scheduledClass.ChildClasses)
+                {
+                    var otherChildIDs = scheduledClass.NeighbourClassIDs.Except(new[] { childClass.ID });
+
+                    childClass.NeighbourClassIDs = otherChildIDs.Append(scheduledClass.ID).ToList();
+                }
+            }
+
             Timetables = compressTimetables(timetables);
             TimetablesGenerated = timetablesGenerated;
             AllScheduledClasses = allScheduledClasses;
