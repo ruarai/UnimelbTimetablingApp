@@ -62,8 +62,6 @@
             $(".fc-bgevent").removeClass("show-background-events");
         },
         eventDrop: function (event) {
-            var oldID = event.id;
-
             //Update event information and optionally move streamed classes
             var oldScheduledClass = scheduledClasses[event.id];
             var classInfo = classInfos[oldScheduledClass.classInfoID];
@@ -74,42 +72,22 @@
             event.id = scheduledClasses.indexOf(newScheduledClass);
             $('#timetable').fullCalendar('updateEvent', event);
 
-            //Drag along our removal list if necessary
-            if (removalDict[oldID] != null) {
-                removalDict[event.id] = removalDict[oldID];
-                removalDict[oldID] = null;
-            }
+            classInfo.currentEvent = event;
 
-            //Get all other events that are part of the PREVIOUS stream
-            var oldStreamEvents = $('#timetable').fullCalendar('clientEvents',
-                function (e) {
-                    return oldScheduledClass.neighbourClassIDs.some(function (id) {
-                        return e.id === id;
-                    });
-                });
+
             if ($('#forceStreamedCheckbox').is(':checked')) {
-                //Remove the stream immediately
-                oldStreamEvents.forEach(function(e) {
+                //Remove each current streamed class by their classinfo, meaning we can remove them even if they're not directly adjacent
+                newScheduledClass.neighbourClassIDs.forEach(function (classID) {
+                    var classInfo = classInfos[scheduledClasses[classID].classInfoID];
 
-
-                    $('#timetable').fullCalendar('removeEvents', e.id);
+                    $('#timetable').fullCalendar('removeEvents', classInfo.currentEvent.id);
                 });
 
-                //Check if our event had priorly marked events for removal
-                if (removalDict[event.id] != null) {
-                    removalDict[event.id].forEach(function (e) {
-                        $('#timetable').fullCalendar('removeEvents', e.id);
-                    });
-                    removalDict[event.id] = null;
-                }
 
                 //Render our new stream neighbours
                 newScheduledClass.neighbourClassIDs.forEach(function (classID) {
                     renderClass(classID);
                 });
-            } else {
-                //Otherwise, keep track of our neighbours as we will need to remove these later
-                removalDict[event.id] = oldStreamEvents;
             }
         },
         eventAllow: function (dropLocation, event) {
@@ -340,6 +318,8 @@
         };
 
         $("#timetable").fullCalendar('renderEvent', event);
+
+        classInfo.currentEvent = event;
     }
 
     function invertColor(hex) {
