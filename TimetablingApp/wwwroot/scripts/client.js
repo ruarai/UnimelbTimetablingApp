@@ -14,7 +14,8 @@
     var renderTimetable;
     var setSubjectInfo;
     var buildBackgroundEvents;
-
+    var getClassAtTime;
+    var renderClass;
 
 
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
@@ -25,7 +26,7 @@
             return;
         }
         subjectCount++;
-        
+
         $("#subjectList").append(buildSubjectListing(this.value));
         $("#subjectSearch").val("");
         updateSubjectInfo();
@@ -36,7 +37,7 @@
     var scheduledClasses = [];
     var classInfos = [];
 
-    var lastMouseOverID = -1;
+    var removalDict = {};
 
     $("#timetable").fullCalendar({
         weekends: false,
@@ -48,8 +49,8 @@
         displayEventTime: false,
         contentHeight: 'auto',
         columnHeaderFormat: 'dddd',
-        snapDuration:'00:15',
-        eventDragStart: function (event, jsEvent, ui, view) {
+        snapDuration: '00:15',
+        eventDragStart: function (event) {
             var classInfo = classInfos[scheduledClasses[event.id].classInfoID];
 
             classInfo.scheduledClassIDs.forEach(function (classID) {
@@ -57,24 +58,77 @@
             });
 
         },
-        eventDragStop: function (event, jsEvent, ui, view) {
+        eventDragStop: function () {
             $(".fc-bgevent").removeClass("show-background-events");
         },
-        eventDrop: function (event, delta, revertFunc) {
+        eventDrop: function (event) {
+            var oldID = event.id;
+
+            //Update event information and optionally move streamed classes
+            var oldScheduledClass = scheduledClasses[event.id];
+            var classInfo = classInfos[oldScheduledClass.classInfoID];
+
+
+            //Update our event with our new class
+            var newScheduledClass = getClassAtTime(event.start.format(), classInfo);
+            event.id = scheduledClasses.indexOf(newScheduledClass);
+            $('#timetable').fullCalendar('updateEvent', event);
+
+            //Drag along our removal list if necessary
+            if (removalDict[oldID] != null) {
+                removalDict[event.id] = removalDict[oldID];
+                removalDict[oldID] = null;
+            }
+
+            //Get all other events that are part of the PREVIOUS stream
+            var oldStreamEvents = $('#timetable').fullCalendar('clientEvents',
+                function (e) {
+                    return oldScheduledClass.neighbourClassIDs.some(function (id) {
+                        return e.id === id;
+                    });
+                });
+            if ($('#forceStreamedCheckbox').is(':checked')) {
+                //Remove the stream immediately
+                oldStreamEvents.forEach(function(e) {
+
+
+                    $('#timetable').fullCalendar('removeEvents', e.id);
+                });
+
+                //Check if our event had priorly marked events for removal
+                if (removalDict[event.id] != null) {
+                    removalDict[event.id].forEach(function (e) {
+                        $('#timetable').fullCalendar('removeEvents', e.id);
+                    });
+                    removalDict[event.id] = null;
+                }
+
+                //Render our new stream neighbours
+                newScheduledClass.neighbourClassIDs.forEach(function (classID) {
+                    renderClass(classID);
+                });
+            } else {
+                //Otherwise, keep track of our neighbours as we will need to remove these later
+                removalDict[event.id] = oldStreamEvents;
+            }
         },
         eventAllow: function (dropLocation, event) {
             var classInfo = classInfos[scheduledClasses[event.id].classInfoID];
 
-            var anyValidClass = false;
-            classInfo.scheduledClassIDs.forEach(function (classID) {
-                var scheduledClass = scheduledClasses[classID];
-                if (scheduledClass.timeStart === dropLocation.start.format()) {
-                    anyValidClass = true;
-                }
-            });
-            return anyValidClass;
+            return getClassAtTime(event.start.format(), classInfo) != null;
         }
     });
+
+    getClassAtTime = function (time, classInfo) {
+        var matchingClass = null;
+        classInfo.scheduledClassIDs.forEach(function (classID) {
+            var scheduledClass = scheduledClasses[classID];
+            if (scheduledClass.timeStart === time) {
+                matchingClass = scheduledClass;
+            }
+        });
+        return matchingClass;
+    }
 
 
     var previousSlideTime = new Date().getTime();
@@ -93,7 +147,7 @@
 
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
-        
+
         var subjectCodes = getSubjectCodes();
 
         setStatus('Generating timetables...');
@@ -192,7 +246,7 @@
     updateSubjectInfo = function () {
         //disable calculation whilst this happens, otherwise weird stuff can happen with timetable retrieval internally
         $("#calculateButton").attr('disabled', true);
-        
+
         //all filtering/subject info
         var model = {
             subjectCodes: getSubjectCodes()
@@ -229,7 +283,7 @@
         $("#timetablesInfo").append(status);
     };
 
-    setSubjectInfo = function(status) {
+    setSubjectInfo = function (status) {
         $("#subjectInfo").empty();
         $("#subjectInfo").append(status);
     };
@@ -248,41 +302,45 @@
         buildBackgroundEvents();
 
         timetable.forEach(function (classID) {
-            var scheduledClass = scheduledClasses[classID];
-            var classInfo = classInfos[scheduledClass.classInfoID];
-
-            $("#timetable").fullCalendar('gotoDate', scheduledClass.timeStart);
-
-            var classLabel = '';
-
-            if (window.innerWidth < 900) {
-                classLabel = classInfo.parentSubject.shortCode + '\n' +
-                    classInfo.className;
-            }
-            else {
-                classLabel = classInfo.parentSubject.displayName + '\n' +
-                    classInfo.className;
-            }
-
-            var color = string_to_color(classInfo.parentSubject.shortCode);
-            var borderColor = classColors[classInfo.classDescription];
-
-            if (borderColor == null)
-                borderColor = color;
-            var event = {
-                start: scheduledClass.timeStart,
-                end: scheduledClass.timeEnd,
-                title: classLabel,
-                backgroundColor: '#' + color,
-                borderColor: '#' + borderColor,
-                textColor: invertColor(color),
-                id: classID,
-                startEditable: classInfo.scheduledClassIDs.length > 1
-            };
-
-            $("#timetable").fullCalendar('renderEvent', event);
+            renderClass(classID);
         });
     };
+
+    renderClass = function (classID) {
+        var scheduledClass = scheduledClasses[classID];
+        var classInfo = classInfos[scheduledClass.classInfoID];
+
+        $("#timetable").fullCalendar('gotoDate', scheduledClass.timeStart);
+
+        var classLabel = '';
+
+        if (window.innerWidth < 900) {
+            classLabel = classInfo.parentSubject.shortCode + '\n' +
+                classInfo.className;
+        }
+        else {
+            classLabel = classInfo.parentSubject.displayName + '\n' +
+                classInfo.className;
+        }
+
+        var color = string_to_color(classInfo.parentSubject.shortCode);
+        var borderColor = classColors[classInfo.classDescription];
+
+        if (borderColor == null)
+            borderColor = color;
+        var event = {
+            start: scheduledClass.timeStart,
+            end: scheduledClass.timeEnd,
+            title: classLabel,
+            backgroundColor: '#' + color,
+            borderColor: '#' + borderColor,
+            textColor: invertColor(color),
+            id: classID,
+            startEditable: classInfo.scheduledClassIDs.length > 1
+        };
+
+        $("#timetable").fullCalendar('renderEvent', event);
+    }
 
     function invertColor(hex) {
         if (hex.indexOf('#') === 0) {
