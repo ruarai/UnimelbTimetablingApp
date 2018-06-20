@@ -22,5 +22,7 @@ namespace Timetabling
         public string ClassDescription => ClassName.Split(" ")[0];//eg, Lecture, Tutorial
 
         public int ID { get; set; }
+
+        public List<int> ScheduledClassIDs => ScheduledClasses.Select(s => s.ID).ToList();
     }
 }

@@ -47,6 +47,8 @@ namespace Timetabling
         public int ID { get; set; }
         public int ClassInfoID => ClassInfo.ID;
 
+        public List<int> NeighbourClassIDs { get; set; }
+
         
 
         private static short dateToSlot(DateTime dt)

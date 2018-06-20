@@ -13,6 +13,7 @@
     var updateSubjectInfo;
     var renderTimetable;
     var setSubjectInfo;
+    var buildBackgroundEvents;
 
 
 
@@ -30,6 +31,13 @@
         updateSubjectInfo();
     });
 
+
+    var timetables = [];
+    var scheduledClasses = [];
+    var classInfos = [];
+
+    var lastMouseOverID = -1;
+
     $("#timetable").fullCalendar({
         weekends: false,
         defaultView: 'agendaWeek',
@@ -39,7 +47,33 @@
         allDaySlot: false,
         displayEventTime: false,
         contentHeight: 'auto',
-        columnHeaderFormat: 'dddd'
+        columnHeaderFormat: 'dddd',
+        snapDuration:'00:15',
+        eventDragStart: function (event, jsEvent, ui, view) {
+            var classInfo = classInfos[scheduledClasses[event.id].classInfoID];
+
+            classInfo.scheduledClassIDs.forEach(function (classID) {
+                $(".backgroundClass-" + classID).addClass("show-background-events");
+            });
+
+        },
+        eventDragStop: function (event, jsEvent, ui, view) {
+            $(".fc-bgevent").removeClass("show-background-events");
+        },
+        eventDrop: function (event, delta, revertFunc) {
+        },
+        eventAllow: function (dropLocation, event) {
+            var classInfo = classInfos[scheduledClasses[event.id].classInfoID];
+
+            var anyValidClass = false;
+            classInfo.scheduledClassIDs.forEach(function (classID) {
+                var scheduledClass = scheduledClasses[classID];
+                if (scheduledClass.timeStart === dropLocation.start.format()) {
+                    anyValidClass = true;
+                }
+            });
+            return anyValidClass;
+        }
     });
 
 
@@ -56,9 +90,6 @@
         }
     });
 
-    var timetables = [];
-    var scheduledClasses = [];
-    var classInfos = [];
 
     $("#calculateButton").click(function (event) {
         $("#calculateButton").attr('disabled', true);
@@ -112,8 +143,22 @@
             }
         });
     });
-   
-    
+
+    buildBackgroundEvents = function () {
+        var id = 0;
+        scheduledClasses.forEach(function (scheduledClass) {
+            var event = {
+                start: scheduledClass.timeStart,
+                end: scheduledClass.timeEnd,
+                rendering: 'background',
+                className: 'backgroundClass-' + id
+            };
+            $("#timetable").fullCalendar('renderEvent', event, true);
+            id++;
+        });
+    };
+
+
     var buildSubjectListing = function (subjectName) {
         var div = $('<div>' + subjectName + '</div>');
 
@@ -200,12 +245,11 @@
 
     renderTimetable = function (timetable) {
         $("#timetable").fullCalendar('removeEvents');
+        buildBackgroundEvents();
 
         timetable.forEach(function (classID) {
             var scheduledClass = scheduledClasses[classID];
-            console.log(scheduledClass);
             var classInfo = classInfos[scheduledClass.classInfoID];
-            console.log(classInfo);
 
             $("#timetable").fullCalendar('gotoDate', scheduledClass.timeStart);
 
@@ -225,15 +269,15 @@
 
             if (borderColor == null)
                 borderColor = color;
-            
-            event = {
+            var event = {
                 start: scheduledClass.timeStart,
                 end: scheduledClass.timeEnd,
                 title: classLabel,
                 backgroundColor: '#' + color,
                 borderColor: '#' + borderColor,
                 textColor: invertColor(color),
-                editable: true
+                id: classID,
+                startEditable: classInfo.scheduledClassIDs.length > 1
             };
 
             $("#timetable").fullCalendar('renderEvent', event);

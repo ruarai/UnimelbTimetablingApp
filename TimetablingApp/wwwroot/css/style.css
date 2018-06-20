@@ -3,7 +3,7 @@
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-    margin:0;
+    margin: 0;
     padding: 0;
 }
 
@@ -14,15 +14,15 @@
     height: 80%;
 }
 
-#left{
+#left {
     flex: 1 200px;
-    min-width:200px;
+    min-width: 200px;
 }
 
-#right{
+#right {
     flex: 10 300px;
-    min-width:300px;
-    flex-wrap:wrap;
+    min-width: 300px;
+    flex-wrap: wrap;
 }
 
 .borderlow {
@@ -58,16 +58,16 @@
 }
 
 .contentspacer {
-    height:100px;
+    height: 100px;
 }
 
-.timeInput{
-    float:right;
+.timeInput {
+    float: right;
 }
 
 
-#subjectList{
-    height:250px;
+#subjectList {
+    height: 250px;
 }
 
 .clear {
@@ -82,13 +82,13 @@
     margin: 6px 6px 0 0;
 }
 
-#timetablesInfo{
-    padding-top:4px;
+#timetablesInfo {
+    padding-top: 4px;
 }
 
-.footer{
-    text-align:center;
-    margin-bottom:10px;
+.footer {
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 .header {
@@ -112,16 +112,17 @@ a:visited, a {
 
 #calculateButton {
     float: right;
-    background-color:#111111;
+    background-color: #111111;
     text-decoration: none;
     border: none;
     padding: 4px;
     color: white;
     font-family: Montserrat,sans-serif;
     font-size: 1.1em;
-    margin-top:-4px;
-    border-radius:2px;
+    margin-top: -4px;
+    border-radius: 2px;
 }
+
     #calculateButton:disabled,
     #calculateButton[disabled] {
         background-color: white;
@@ -134,13 +135,14 @@ a:visited, a {
     color: dodgerblue;
 }
 
-.sortCheckbox{
-    float:right;
+.sortCheckbox {
+    float: right;
 }
 
 .sortOption {
     padding-bottom: 8px;
 }
+
 input[type="time"] {
     font-family: Montserrat,sans-serif;
     width: 103px;
@@ -149,9 +151,10 @@ input[type="time"] {
     border-radius: 2px;
 }
 
-#dayList{
-    float:right;
+#dayList {
+    float: right;
 }
+
 .dayButton {
     display: inline-block;
     cursor: pointer;
@@ -187,19 +190,21 @@ hr {
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
 }
+
 .fc-day-header {
     font-weight: normal;
     text-decoration: underline;
 }
 
-#timetable{
-    font-size:0.9em;
+#timetable {
+    font-size: 0.9em;
 }
 
 
 .awesomplete mark {
     background: hsl(182, 51%, 78%);
 }
+
 .awesomplete li:hover mark {
     background: hsl(182, 100%, 41%);
 }
@@ -209,22 +214,33 @@ hr {
     color: inherit;
 }
 
-.fc-unthemed td.fc-today{
-    background-color:white;
+.fc-unthemed td.fc-today {
+    background-color: white;
 }
 
 
-thead>tr>td {
+thead > tr > td {
     border-top: 0 !important;
 }
+
 table tr:last-child td {
     border-bottom: 0;
 }
+
 table tr td:first-child,
 table tr th:first-child {
     border-left: 0;
 }
+
 table tr td:last-child,
 table tr th:last-child {
     border-right: 0;
 }
+
+.fc-bgevent {
+    display: none;
+}
+
+    .fc-bgevent.show-background-events {
+        display: block;
+    }
