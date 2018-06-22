@@ -239,6 +239,8 @@ table tr th:last-child {
 
 .fc-bgevent {
     display: none;
+    border: white solid;
+    border-width: 0 2px 2px 0;
 }
 
     .fc-bgevent.show-background-events {

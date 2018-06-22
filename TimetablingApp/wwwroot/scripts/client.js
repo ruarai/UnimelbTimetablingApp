@@ -15,7 +15,7 @@
     var setSubjectInfo;
     var buildBackgroundEvents;
     var getClassAtTime;
-    var renderClass;
+    var createEvent;
 
 
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
@@ -37,7 +37,10 @@
     var scheduledClasses = [];
     var classInfos = [];
 
-    var removalDict = {};
+    var classEvents = [];
+    var backgroundEvents = [];
+
+    var extraRemovalEvents = [];
 
     $("#timetable").fullCalendar({
         weekends: false,
@@ -74,6 +77,10 @@
 
             classInfo.currentEvent = event;
 
+            //Anything that gets touched by drag and drop is a nightmare
+            //Make sure we remove it
+            extraRemovalEvents.push(event);
+
 
             if ($('#forceStreamedCheckbox').is(':checked')) {
                 //Remove each current streamed class by their classinfo, meaning we can remove them even if they're not directly adjacent
@@ -86,7 +93,12 @@
 
                 //Render our new stream neighbours
                 newScheduledClass.neighbourClassIDs.forEach(function (classID) {
-                    renderClass(classID);
+                    var newEvent = createEvent(classID);
+                    $('#timetable').fullCalendar('renderEvent', newEvent);
+
+                    //These events get really messy when we use sources
+                    //So add it to a seperate list for removal later
+                    extraRemovalEvents.push(newEvent);
                 });
             }
         },
@@ -164,6 +176,10 @@
                 scheduledClasses = timetableModel.allScheduledClasses;
                 classInfos = timetableModel.originalClassInfos;
 
+                $("#timetable").fullCalendar('removeEventSource', backgroundEvents);
+                $("#timetable").fullCalendar('removeEventSource', classEvents);
+
+                buildBackgroundEvents();
                 renderTimetable(timetableModel.timetables[0]);
 
                 $("#slider").slider("option", "max", timetableModel.timetables.length - 1);
@@ -177,6 +193,10 @@
     });
 
     buildBackgroundEvents = function () {
+        //Clear all background events
+        $("#timetable").fullCalendar('removeEventSource', backgroundEvents);
+        backgroundEvents = [];
+
         var id = 0;
         scheduledClasses.forEach(function (scheduledClass) {
             var event = {
@@ -185,9 +205,11 @@
                 rendering: 'background',
                 className: 'backgroundClass-' + id
             };
-            $("#timetable").fullCalendar('renderEvent', event, true);
+            backgroundEvents.push(event);
             id++;
         });
+
+        $("#timetable").fullCalendar('addEventSource', backgroundEvents);
     };
 
 
@@ -276,21 +298,27 @@
 
 
     renderTimetable = function (timetable) {
-        $("#timetable").fullCalendar('removeEvents');
-        buildBackgroundEvents();
+        $("#timetable").fullCalendar('removeEventSource', classEvents);
+        classEvents = [];
+
+        extraRemovalEvents.forEach(function (event) {
+            $("#timetable").fullCalendar('removeEvents', event.id);
+        });
 
         timetable.forEach(function (classID) {
-            renderClass(classID);
+            classEvents.push(createEvent(classID));
         });
+        
+        $("#timetable").fullCalendar('addEventSource', classEvents);
     };
 
-    renderClass = function (classID) {
+    createEvent = function (classID) {
         var scheduledClass = scheduledClasses[classID];
         var classInfo = classInfos[scheduledClass.classInfoID];
 
         $("#timetable").fullCalendar('gotoDate', scheduledClass.timeStart);
 
-        var classLabel = '';
+        var classLabel;
 
         if (window.innerWidth < 900) {
             classLabel = classInfo.parentSubject.shortCode + '\n' +
@@ -317,9 +345,9 @@
             startEditable: classInfo.scheduledClassIDs.length > 1
         };
 
-        $("#timetable").fullCalendar('renderEvent', event);
-
         classInfo.currentEvent = event;
+
+        return event;
     }
 
     function invertColor(hex) {
