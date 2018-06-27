@@ -61,13 +61,8 @@
     height: 100px;
 }
 
-.timeInput {
-    float: right;
-}
-
-
 #subjectList {
-    height: 175px;
+    height: 250px;
 }
 
 .clear {
@@ -80,6 +75,35 @@
 
 #slider {
     margin: 6px 6px 0 0;
+    border: 1px dotted black;
+    
+}
+
+#subjectSearch {
+    border: 1px dotted black;
+}
+
+
+.ui-corner-all {
+    border: 1px dotted black;
+    border-radius: 0;
+    outline: none;
+}
+
+.ui-slider-handle {
+    background: url('/img/dither_slider.png') repeat !important;
+    outline: none;
+    border: none !important;
+    top: -0.2em;
+}
+
+.ui-slider-horizontal .ui-slider-handle {
+    top: -0.2em;
+    margin-left: -.6em;
+}
+
+.ui-state-active {
+    border: none !important;
 }
 
 #timetablesInfo {
@@ -100,7 +124,8 @@
 
 .label {
     padding-bottom: 6px;
-    text-decoration: underline;
+    border-bottom: 1px solid black;
+    line-height: 2px;
     font-family: Montserrat,sans-serif;
     font-size: 1.1em;
     display: inline-block;
@@ -142,37 +167,6 @@ a:visited, a {
 .sortOption {
     padding-bottom: 8px;
 }
-
-input[type="time"] {
-    font-family: Montserrat,sans-serif;
-    width: 103px;
-    padding: 2px;
-    border: 1px solid #111111;
-    border-radius: 2px;
-}
-
-#dayList {
-    float: right;
-}
-
-.dayButton {
-    display: inline-block;
-    cursor: pointer;
-    outline: 0;
-    background-color: white;
-    background-image: url('/img/dither_highdense.png');
-    padding: 4px;
-    color: #111111;
-    border: 1px solid #111111;
-}
-
-    .dayButton[ticked="true"] {
-        background-color: #111111;
-        color: white;
-        padding: 5px;
-        border: none;
-        border-radius: 2px;
-    }
 
 hr {
     width: 100%;
