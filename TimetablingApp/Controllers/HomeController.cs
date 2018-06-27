@@ -193,13 +193,15 @@ namespace TimetablingApp.Controllers
             return subjects;
         }
 
+        private const string SubjectCodeFile = "codes_2018_sem2.json";
+
         //Fetches the subjects from disk and creates a list from them
         private List<Subject> getSubjects()
         {
             List<Subject> subjectList = new List<Subject>();
 
             //Read in the list of subject codes and names from disk
-            string subjectsText = System.IO.File.ReadAllText(Path.Combine(_hostingEnvironment.WebRootPath, "codes_2018_sem2.json"));
+            string subjectsText = System.IO.File.ReadAllText(Path.Combine(_hostingEnvironment.WebRootPath, SubjectCodeFile));
             var rawSubjects = JsonConvert.DeserializeObject<List<string>>(subjectsText);
 
             //Create the list of subjects from the subject codes and names
