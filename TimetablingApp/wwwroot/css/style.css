@@ -76,7 +76,6 @@
 #slider {
     margin: 6px 6px 0 0;
     border: 1px dotted black;
-    
 }
 
 #subjectSearch {
@@ -238,5 +237,10 @@ table tr th:last-child {
 }
 
     .fc-bgevent.show-background-events {
+        display: block;
+    }
+
+    .fc-bgevent.highlight-event {
+        background-color: green !important;
         display: block;
     }

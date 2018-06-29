@@ -41,6 +41,7 @@
     var backgroundEvents = [];
 
     var extraRemovalEvents = [];
+    var highlightCleanups = [];
 
     $("#timetable").fullCalendar({
         weekends: false,
@@ -63,6 +64,10 @@
         },
         eventDragStop: function () {
             $(".fc-bgevent").removeClass("show-background-events");
+
+            highlightCleanups.forEach(function (classID) {
+                $(".backgroundClass-" + classID).removeClass("highlight-event");
+            });
         },
         eventDrop: function (event) {
             //Update event information and optionally move streamed classes
@@ -103,9 +108,27 @@
             }
         },
         eventAllow: function (dropLocation, event) {
-            var classInfo = classInfos[scheduledClasses[event.id].classInfoID];
+            var scheduledClass = scheduledClasses[event.id];
+            var classInfo = classInfos[scheduledClass.classInfoID];
 
-            return getClassAtTime(event.start.format(), classInfo) != null;
+            highlightCleanups.forEach(function (classID) {
+                $(".backgroundClass-" + classID).removeClass("highlight-event");
+            });
+            highlightCleanups = [];
+
+            var possibleClass = getClassAtTime(event.start.format(), classInfo);
+
+            if (possibleClass != null) {
+                possibleClass.neighbourClassIDs.forEach(function (classID) {
+                    $(".backgroundClass-" + classID).addClass("highlight-event");
+
+                    highlightCleanups.push(classID);
+                });
+
+                return true;
+            }
+
+            return false;
         }
     });
 
