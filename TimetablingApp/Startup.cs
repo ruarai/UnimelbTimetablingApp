@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -47,6 +48,11 @@ namespace TimetablingApp
             {
                 ContentTypeProvider = provider
             });
+
+            string cacheDirectory = Path.Combine(env.ContentRootPath, "TimetableCache");
+
+            if (!Directory.Exists(cacheDirectory))
+                Directory.CreateDirectory(cacheDirectory);
         }
     }
 }
