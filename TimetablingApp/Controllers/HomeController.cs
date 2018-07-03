@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace TimetablingApp.Controllers
             if (model.SubjectCodes.Count > 5)
                 return StatusCode(403);
 
-            if (System.IO.File.Exists(getModelFilePath(model)))
+            if (System.IO.File.Exists(getModelFilePath(model)) && checkCacheDate(model))
                 return File(loadResult(model), "application/json; charset=utf-8");
 
             List<Subject> subjects = await subjectsFromSubjectCodes(model.SubjectCodes);
@@ -128,6 +129,22 @@ namespace TimetablingApp.Controllers
                     }
                 }
             }
+        }
+
+        //Return if the cached result was created within some timespan stretching back from today
+        //If not, will delete the file off the disk also
+        private bool checkCacheDate(TimetableOptionsModel model)
+        {
+            string path = getModelFilePath(model);
+
+            var creationDate = System.IO.File.GetCreationTime(path);
+
+            bool inDate = DateTime.Now - creationDate < TimeSpan.FromDays(1);
+
+            if(!inDate)
+                System.IO.File.Delete(path);
+
+            return inDate;
         }
 
 
