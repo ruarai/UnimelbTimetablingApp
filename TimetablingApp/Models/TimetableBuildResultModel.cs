@@ -39,11 +39,18 @@ namespace TimetablingApp.Models
             OriginalClassInfos = originalClassInfos;
         }
 
+        public TimetableBuildResultModel(string errorMessage)
+        {
+            ErrorMessage = errorMessage;
+        }
+
         public List<List<int>> Timetables { get; set; }
         public List<ScheduledClass> AllScheduledClasses { get; set; }
         public List<ClassInfo> OriginalClassInfos { get; set; }
 
         public int TimetablesGenerated { get; set; }
+
+        public string ErrorMessage { get; set; }
 
         private static List<List<int>> compressTimetables(List<Timetable> timetables)
         {

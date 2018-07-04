@@ -193,6 +193,13 @@
             success: function (timetableModel) {
                 $("#calculateButton").attr('disabled', false);
 
+                if (timetableModel.errorMessage)
+                {
+                    setStatus(timetableModel.errorMessage);
+                    return;
+                }
+
+
                 setStatus('Generated ' + timetableModel.timetablesGenerated.toLocaleString() + ' timetables.');
 
                 timetables = timetableModel.timetables;

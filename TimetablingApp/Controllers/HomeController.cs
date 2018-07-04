@@ -47,7 +47,7 @@ namespace TimetablingApp.Controllers
         public async Task<IActionResult> BuildTimetable([FromBody] TimetableOptionsModel model)
         {
             if (model.SubjectCodes.Count > 5)
-                return StatusCode(403);
+                return Json(new TimetableBuildResultModel("Too many subjects selected."));
 
             if (System.IO.File.Exists(getModelFilePath(model)) && checkCacheDate(model))
                 return File(loadResult(model), "application/json; charset=utf-8");
@@ -72,7 +72,7 @@ namespace TimetablingApp.Controllers
 
             //Trying to generate when there's more than a trillion possibilities is a bad idea
             if(possiblePermutations > (long)1000 * 1000 * 1000 * 1000)
-                return StatusCode(403);
+                return Json(new TimetableBuildResultModel("Can't generate timetables: too many possible timetables."));
 
 
             List<Timetable> timetables = new List<Timetable>();
