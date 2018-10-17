@@ -206,10 +206,10 @@ hr {
 }
 
 .subject {
-    margin-bottom: 16px;
     width: 100%;
-    min-height: 40px;
+    min-height: 60px;
     position: relative;
+    border-top: solid 2px #e4e4e4;
 }
 
 
