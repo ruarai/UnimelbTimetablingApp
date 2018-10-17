@@ -84,11 +84,9 @@ namespace TimetablingApp.Controllers
                 timetables = g.GenerateTimetablesBruteForce(classInfos);
 
             int numberGenerated = timetables.Count;
-            //Take 25,000 of our timetables and compress them
-            var compressedTimetables = timetables.Take(25000).ToList();
-
-
-            var result = new TimetableBuildResultModel(compressedTimetables,
+            
+            //Take 25,000 timetables and compress them
+            var result = new TimetableBuildResultModel(timetables.Take(25000).ToList(),
                 numberGenerated,
                 allScheduledClasses.ToList(),
                 originalClassInfos.ToList());
@@ -102,6 +100,7 @@ namespace TimetablingApp.Controllers
         {
             string path = getModelFilePath(model);
 
+            //These streams should be closed by ASP.NET when the response is returned
             FileStream fileStream = System.IO.File.Open(path, FileMode.Open);
 
             return new GZipStream(fileStream, CompressionMode.Decompress);

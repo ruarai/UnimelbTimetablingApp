@@ -17,6 +17,8 @@
     var getClassAtTime;
     var createEvent;
 
+    var scheduleYear = 2018;
+
 
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
         var subjectCode = this.value.split(' ')[0];
@@ -27,7 +29,7 @@
         }
         subjectCount++;
 
-        $("#subjectList").append(buildSubjectListing(this.value));
+        $("#subjectList").append(buildSubjectListing(this.value, subjectCode));
         $("#subjectSearch").val("");
         updateSubjectInfo();
     });
@@ -243,10 +245,10 @@
     };
 
 
-    var buildSubjectListing = function (subjectName) {
-        var div = $('<div>' + subjectName + '</div>');
+    var buildSubjectListing = function (subjectName, subjectCode) {
+        var div = $('<div class="subject">' + subjectName + '</div>');
 
-        var removeButton = $('<a class="inlineAction"> (del)</a>');
+        var removeButton = $('<a class="inlineAction deleteButton">remove</a>');
         removeButton.click(function () {
             this.parentNode.parentNode.removeChild(this.parentNode);
             updateSubjectInfo();
@@ -254,8 +256,10 @@
             subjectCount--;
         });
 
+        var infoButton = $('<a class="inlineAction infoButton" target="_blank" href="https://handbook.unimelb.edu.au/' + scheduleYear + '/subjects/' + subjectCode+ '">handbook</a>');
+
         div.append(removeButton);
-        div.append('<hr/>');
+        div.append(infoButton);
 
         return div;
     };

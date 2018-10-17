@@ -18,6 +18,7 @@
 #left {
     flex: 1 200px;
     min-width: 200px;
+    background-color: #e4e4e4;
 }
 
 #right {
@@ -25,19 +26,13 @@
     min-width: 300px;
     flex-wrap: wrap;
     margin-right: 6px;
-}
-
-.borderlow {
-    background: url('/img/dither_lowdense.png') repeat;
-}
-
-.borderhigh {
-    background: url('/img/dither_highdense.png') repeat;
+    display: flex;
+    flex-direction: column;
 }
 
 .border {
     margin: 0 auto;
-    padding: 2px 6px 6px 0;
+    padding: 0 6px 6px 0;
     image-rendering: pixelated;
 }
 
@@ -77,22 +72,18 @@
 
 #slider {
     margin: 6px 6px 0 0;
-    border: 1px dotted black;
 }
 
 input {
-    border: 1px dotted black;
     outline: none;
 }
 
 .ui-corner-all {
-    border: 1px dotted black;
     border-radius: 0;
     outline: none;
 }
 
 .ui-slider-handle {
-    background: url('/img/dither_slider.png') repeat !important;
     outline: none;
     border: none !important;
     top: -0.2em;
@@ -112,8 +103,14 @@ input {
 }
 
 .footer {
-    text-align: center;
+    text-align: right;
     margin-bottom: 10px;
+    font-size: 0.9em;
+    padding-right: 20px;
+}
+
+.filler {
+    flex-grow: 1;
 }
 
 .header {
@@ -130,6 +127,7 @@ input {
     font-family: Montserrat,sans-serif;
     font-size: 1.1em;
     display: inline-block;
+    margin-bottom: 8px;
 }
 
 a:visited, a {
@@ -138,7 +136,7 @@ a:visited, a {
 
 #calculateButton {
     float: right;
-    background-color: #111111;
+    background-color: #50bbb6;
     text-decoration: none;
     border: none;
     padding: 4px;
@@ -146,19 +144,33 @@ a:visited, a {
     font-family: Montserrat,sans-serif;
     font-size: 1.1em;
     margin-top: -4px;
-    border-radius: 2px;
+    cursor:pointer;
 }
 
     #calculateButton:disabled,
     #calculateButton[disabled] {
-        background-color: white;
-        background-image: url('/img/dither_mediumdense.png');
-        color: #111111;
+        background-color: #bb8150;
+        opacity: 0.4;
+        color: white;
+        cursor: initial;
     }
 
 .inlineAction {
     cursor: pointer;
+    float: right;
+    position: absolute;
+    bottom: 0px;
+    text-decoration: none;
+}
+
+.deleteButton {
+    color: #ff6d6d;
+    right: 0px;
+}
+
+.infoButton, .infoButton:visited {
     color: dodgerblue;
+    left: 0px;
 }
 
 .sortCheckbox {
@@ -174,11 +186,8 @@ hr {
     width: 100%;
     height: 6px;
     border: none;
-    background: url('/img/dither_mediumdense.png') repeat;
     margin: 4px;
 }
-
-
 
 .fc-time-grid-event {
     border-width: 2px 0 0 2px !important;
@@ -194,6 +203,13 @@ hr {
 
 #timetable {
     font-size: 0.9em;
+}
+
+.subject {
+    margin-bottom: 16px;
+    width: 100%;
+    min-height: 40px;
+    position: relative;
 }
 
 
