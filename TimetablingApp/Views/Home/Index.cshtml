@@ -5,14 +5,26 @@
 
 <html>
 <head>
-    <meta name="viewport" content="width=device-width" />
-    <title>UoM Timetable Generator</title>
-    <meta charset="utf-8" />
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-46896943-10"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
 
-    <link href="~/css/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
-    <link href="~/css/awesomplete.css" rel="stylesheet" type="text/css" media="all" />
-    <link href="~/css/fullcalendar.min.css" rel="stylesheet" type="text/css" media="all" />
-    <link href="~/css/style.css" rel="stylesheet" type="text/css" media="all" />
+        function gtag() { dataLayer.push(arguments); }
+
+        gtag('js', new Date());
+
+        gtag('config', 'UA-46896943-10');
+    </script>
+
+    <meta name="viewport" content="width=device-width"/>
+    <title>UoM Timetable Generator</title>
+    <meta charset="utf-8"/>
+
+    <link href="~/css/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all"/>
+    <link href="~/css/awesomplete.css" rel="stylesheet" type="text/css" media="all"/>
+    <link href="~/css/fullcalendar.min.css" rel="stylesheet" type="text/css" media="all"/>
+    <link href="~/css/style.css" rel="stylesheet" type="text/css" media="all"/>
     <link href="https://fonts.googleapis.com/css?family=Montserrat|PT+Sans|Open+Sans:500" rel="stylesheet">
 
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -25,7 +37,11 @@
     <meta name="msapplication-TileColor" content="#094183">
     <meta name="theme-color" content="#094183">
 
-    <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
+    <script>if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+    </script>
 
     <script src="~/scripts/jquery-3.3.1.min.js"></script>
     <script src="~/scripts/jquery-ui.min.js"></script>
@@ -39,7 +55,7 @@
     <script src="~/scripts/signalr.min.js"></script>
 
     <script type="text/javascript">
-        $(function () {
+        $(function() {
             //Generate a global variable of each of the full subject list
             window.subjectList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
         });
