@@ -80,7 +80,7 @@ namespace SubjectLister
             }
 
             //Writes the output to a JSON file
-            File.WriteAllText($"codes_{Year}sem_{Semester}.json", JsonConvert.SerializeObject(codes));
+            File.WriteAllText($"codes_{Year}_sem_{Semester}.json", JsonConvert.SerializeObject(codes));
         }
     }
 }
