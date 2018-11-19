@@ -14,14 +14,14 @@ namespace SubjectLister
     {
         //What year/semester you are fetching for
         //This should still include year long subjects
-        private const int Year = 2018;
-        private const int Semester = 2;
+        private const int Year = 2019;
+        private const int Semester = 1;
 
         //Number of pages to fetch
         //Needs to be determined manually for each new semester, just look at
         //https://handbook.unimelb.edu.au/search?query=&year=2018&types%5B%5D=subject&level_type%5B%5D=all&study_periods%5B%5D=semester_2&study_periods%5B%5D=year_long&area_of_study=all&faculty=all&department=all
         //manually to determine this (changing year/semester in the url, of course)
-        private const int Pages = 118;
+        private const int Pages = 116;
 
         
 
@@ -80,7 +80,7 @@ namespace SubjectLister
             }
 
             //Writes the output to a JSON file
-            File.WriteAllText($"codes_{Year}sem{Semester}.json", JsonConvert.SerializeObject(codes));
+            File.WriteAllText($"codes_{Year}sem_{Semester}.json", JsonConvert.SerializeObject(codes));
         }
     }
 }
