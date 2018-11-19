@@ -203,9 +203,11 @@ namespace Timetabling
 
             return a.SlotStart == b.SlotStart && a.SlotEnd == b.SlotEnd;
         }
-        
-        private const string SemesterWeeks = "30-42";
-        private const string TimetableYear = "2018";
+
+        //To find below SemesterWeeks value
+        //Look up a subject on the SWS website ("Displaying Dates: 04 Mar 2019 - 21 Apr 2019, 29 Apr 2019 - 02 Jun 2019 (week 10‑16,18‑22)")
+        private const string SemesterWeeks = "10-22";
+        private const string TimetableYear = "2019";
 
         private async Task<string> getTimetableHTML(string subjectCode)
         {

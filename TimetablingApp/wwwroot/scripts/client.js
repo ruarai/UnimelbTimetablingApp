@@ -17,7 +17,7 @@
     var getClassAtTime;
     var createEvent;
 
-    var scheduleYear = 2018;
+    var scheduleYear = 2019;
 
 
     $("#subjectSearch").on('awesomplete-selectcomplete', function () {
