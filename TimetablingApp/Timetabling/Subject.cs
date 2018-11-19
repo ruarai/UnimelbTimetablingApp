@@ -43,7 +43,7 @@ namespace Timetabling
 
             removeEquivalentClasses();
 
-            placeClassesIntoFirstWeek();
+            placeClassesIntoSecondWeek();
         }
 
         private async Task downloadTimetable()
@@ -176,12 +176,14 @@ namespace Timetabling
                 ClassInfos.Remove(c);   
         }
 
-        private void placeClassesIntoFirstWeek()
+        
+        private void placeClassesIntoSecondWeek()
         {
-            //Moves all classes into the first week of the year for easier rendering
+            //Moves all classes into the SECOND week of the year for easier rendering
+            //TURNS OUT THE FIRST WEEK OF THE YEAR ISN'T NECESSARILY GOING TO BE A FULL WEEK
             foreach (var scheduledClass in AllClasses)
             {
-                while (getWeekOfYear(scheduledClass.TimeStart) > 1)
+                while (getWeekOfYear(scheduledClass.TimeStart) > 2)
                 {
                     scheduledClass.TimeStart = scheduledClass.TimeStart - TimeSpan.FromDays(7);
                     scheduledClass.TimeEnd = scheduledClass.TimeEnd - TimeSpan.FromDays(7);
