@@ -15,7 +15,7 @@ namespace SubjectLister
         //What year/semester you are fetching for
         //This should still include year long subjects
         private const int Year = 2019;
-        private const int Semester = 1;
+        private const int Semester = 2;
 
         //Number of pages to fetch
         //Needs to be determined manually for each new semester, just look at

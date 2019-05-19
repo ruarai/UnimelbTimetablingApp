@@ -209,7 +209,7 @@ namespace TimetablingApp.Controllers
             return subjects;
         }
 
-        private const string SubjectCodeFile = "codes_2019_sem_1.json";
+        private const string SubjectCodeFile = "codes_2019_sem_2.json";
 
         //Fetches the subjects from disk and creates a list from them
         private List<Subject> getSubjects()
