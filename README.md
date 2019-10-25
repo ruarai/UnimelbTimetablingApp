@@ -6,6 +6,17 @@ After a year and a half of running, the website is no longer available as the un
 
 https://students.unimelb.edu.au/admin/class-timetable
 
+### Shutdown Stats
+
+~13,000 unique visitors
+~35,000 page views
+
+#### Semester 2 2019:
+7,679 unique subject combinations
+281MB of cached timetables
+
+
+
 
 Give this website your list of subjects for a semester and it will generate a list of possible timetables, sorted by quality.
 
