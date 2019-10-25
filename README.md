@@ -1,6 +1,11 @@
 # Unimelb Timetabling App
 
-http://timetable.ruar.ai
+## Shutdown
+
+After a year and a half of running, the website is no longer available as the university has moved to MyTimetable.
+
+https://students.unimelb.edu.au/admin/class-timetable
+
 
 Give this website your list of subjects for a semester and it will generate a list of possible timetables, sorted by quality.
 
